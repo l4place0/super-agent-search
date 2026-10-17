@@ -1,0 +1,9 @@
+.git
+data
+dist/*.tar
+.env
+*.db*
+*.tar.gz
+credentials.local.json
+client-token.local
+deployment.local.json

@@ -1,0 +1,18 @@
+services:
+  search:
+    image: ${SAS_IMAGE:-super-agent-search:0.2.4}
+    build: .
+    ports:
+      - "${SAS_BIND:-127.0.0.1}:${SAS_PORT:-8098}:8080"
+    volumes:
+      - search-data:/data
+    restart: unless-stopped
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+volumes:
+  search-data:

@@ -1,0 +1,14 @@
+.env
+data/
+dist/
+*.db*
+*.tar.gz
+deployment.local.json
+credentials.local.json
+client-token.local
+*.log
+.env.*
+!.env.example
+*.key
+*.pem
+deploy/verification*.md
