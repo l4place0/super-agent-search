@@ -10,6 +10,67 @@ import (
 	"testing"
 )
 
+func TestBraveSearchAndConnectionTestsSendNoCache(t *testing.T) {
+	a := testApp(t)
+	up := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Cache-Control") != "no-cache" {
+			// Reproduce Brave's validation failure before authentication/search.
+			http.Error(w, "invalid cache-control header", http.StatusUnprocessableEntity)
+			return
+		}
+		if r.Method != http.MethodGet || r.URL.Path != "/res/v1/web/search" || r.URL.Query().Get("q") == "" || r.URL.Query().Get("count") == "" {
+			t.Errorf("unexpected Brave request: %s %s", r.Method, r.URL)
+		}
+		if r.Header.Get("X-Subscription-Token") != "test-brave-secret" {
+			t.Error("missing Brave subscription token")
+		}
+		w.Header().Set("Content-Type", "application/json")
+		fmt.Fprint(w, `{"web":{"results":[{"title":"Go docs","url":"https://go.dev/doc/","description":"Official documentation"}]}}`)
+	}))
+	defer up.Close()
+	if _, err := a.db.Exec(`UPDATE providers SET enabled=1,base_url=? WHERE id='brave'`, up.URL); err != nil {
+		t.Fatal(err)
+	}
+	id, err := a.addKey("brave", "test", "test-brave-secret", 1, 2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, tc := range []struct {
+		name, path, token, body string
+	}{
+		{"search", "/v1/search", a.clientToken, `{"query":"Go docs","providers":["brave"],"no_cache":true}`},
+		{"provider test", "/api/admin/providers/brave/test", a.adminToken, `{}`},
+		{"key test", fmt.Sprintf("/api/admin/keys/%d/test", id), a.adminToken, `{}`},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			w := call(a, http.MethodPost, tc.path, tc.token, tc.body)
+			if w.Code != http.StatusOK {
+				t.Fatalf("status %d: %s", w.Code, w.Body)
+			}
+			var attempts []Attempt
+			if tc.name == "key test" {
+				var attempt Attempt
+				if err := json.Unmarshal(w.Body.Bytes(), &attempt); err != nil {
+					t.Fatal(err)
+				}
+				attempts = []Attempt{attempt}
+			} else {
+				var out SearchOutput
+				if err := json.Unmarshal(w.Body.Bytes(), &out); err != nil {
+					t.Fatal(err)
+				}
+				attempts = out.Attempts
+				if tc.name == "search" && (len(out.Results) != 1 || out.Results[0].URL != "https://go.dev/doc/") {
+					t.Fatalf("unexpected results: %+v", out.Results)
+				}
+			}
+			if len(attempts) != 1 || !attempts[0].OK || attempts[0].KeyID != id || attempts[0].Count != 1 {
+				t.Fatalf("unexpected attempts: %+v", attempts)
+			}
+		})
+	}
+}
+
 func TestExplicitProviderDoesNotSelectRemainingEnabledProviders(t *testing.T) {
 	a := testApp(t)
 	up := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

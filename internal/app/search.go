@@ -107,6 +107,7 @@ func (a *App) requestProvider(ctx context.Context, p Provider, key, query string
 		values.Set("count", strconv.Itoa(count))
 		u.RawQuery = values.Encode()
 		headers["X-Subscription-Token"] = key
+		headers["Cache-Control"] = "no-cache"
 	case "exa":
 		u.Path = strings.TrimRight(u.Path, "/") + "/search"
 		method = "POST"
