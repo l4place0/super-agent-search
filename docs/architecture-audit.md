@@ -195,6 +195,12 @@ update/recreate/ensure 共用 inspect 驱动的 plan：实际 volume/bind 挂载
 
 基线 `9dfb269` 的单因素离线实验覆盖 9 个有害变异与 1 个等价负对照，原回归检出 8/9。唯一存活项是移除 readiness 数据库探测：原测试的 KeyPool fault 掩盖了这一缺失。补充独立 closed-DB 探针后，原实现通过、变异失败；探针已成为常规回归。等价重复策略的负对照保持通过，不能把行为测试当作共享模块维护价值的证明。详见[实验报告](audit/ablation.md)及机器记录；这不是性能或完整安全评估，所有消融仅在临时副本进行。
 
+### A1–A8 全清单 × 全测试链消融
+
+[全量报告](audit/ablation-full.md)：基线 `0b7ac35` 的 30 个版本均完成全套 Go/race（含 sh/pwsh 客户端、进程停机）、Windows 5.1/DPAPI mock、Linux pwsh mock、Node DOM 与 sh 语法；前后基线通过、零 Go skip。28 个有害变异中检出 27 个，两个等价负对照均通过。DoH 限制从 64 KiB 放宽到 4 MiB 原未检出，因为 oversized fixture 先被非法 JSON 解析拒绝；`2b27afa` 新增合法 JSON 的精确边界测试，单项全测试链复核成功检出。此后未在新 revision 重跑全部矩阵，详见两个原始 JSON 记录。
+
+实验过程中遇到外部执行时限和非目标时间敏感测试失败，均保留检查点/复测历史，并通过机制 witness 归因排除假检出。不是性能、穷举组合或完整安全评估，未运行真实 WSLC/供应商。
+
 ## 推荐执行顺序
 
 1. 修 A1/A2：统一 Key lease/revision 和单调冷却，补并发回归。

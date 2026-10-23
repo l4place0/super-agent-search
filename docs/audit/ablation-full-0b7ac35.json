@@ -1,0 +1,1708 @@
+{
+  "revision": "0b7ac35e182faf7fc2ea3282dfc3e1cac3d0178f",
+  "method": "single-factor finite A1-A8 inventory; complete offline suites for each variant",
+  "workers": 2,
+  "repetitions_per_variant": 1,
+  "baseline": [
+    {
+      "name": "baseline_before",
+      "area": "all",
+      "kind": "baseline",
+      "outcome": "survived",
+      "suites": {
+        "go_race_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 98.847,
+          "passed_count": 118,
+          "failed_tests": [],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 4.082
+        },
+        "linux_pwsh_mock": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 17.098
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 1.207,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.032
+        }
+      },
+      "patched_files_sha256": {}
+    },
+    {
+      "name": "baseline_after",
+      "area": "all",
+      "kind": "baseline",
+      "outcome": "survived",
+      "suites": {
+        "go_race_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 48.94,
+          "passed_count": 118,
+          "failed_tests": [],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 2.049
+        },
+        "linux_pwsh_mock": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 4.583
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.359,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.009
+        }
+      },
+      "patched_files_sha256": {},
+      "any_suite_outcome": "survived"
+    }
+  ],
+  "cases": [
+    {
+      "name": "readiness_without_database_probe",
+      "area": "A5",
+      "kind": "defense",
+      "outcome": "detected",
+      "suites": {
+        "go_race_all": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 133.418,
+          "passed_count": 117,
+          "failed_tests": [
+            "uni-agent-search/internal/app/TestReadinessReportsUnavailableDatabase"
+          ],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 3.537
+        },
+        "linux_pwsh_mock": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 10.015
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 1.307,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.035
+        }
+      },
+      "patched_files_sha256": {
+        "internal/app/observe.go": "154ab30bd6700f30daf86426caf28b218e59588b8d8c30714d3616b5203896bb"
+      },
+      "any_suite_outcome": "detected",
+      "witnesses": [
+        "uni-agent-search/internal/app/TestReadinessReportsUnavailableDatabase"
+      ]
+    },
+    {
+      "name": "without_ingress_accounting",
+      "area": "A5",
+      "kind": "defense",
+      "outcome": "detected",
+      "suites": {
+        "go_race_all": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 134.621,
+          "passed_count": 114,
+          "failed_tests": [
+            "uni-agent-search/cmd/server/TestServerSIGTERMLifecycle",
+            "uni-agent-search/cmd/server/TestServerSIGTERMLifecycle/drain",
+            "uni-agent-search/cmd/server/TestServerSIGTERMLifecycle/timeout",
+            "uni-agent-search/internal/app/TestIngressAccountingIncludesCacheAndFetchFailures"
+          ],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 3.418
+        },
+        "linux_pwsh_mock": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 10.083
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 1.158,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.052
+        }
+      },
+      "patched_files_sha256": {
+        "internal/app/observe.go": "c15b2db5893bf1e8f24afc68bd8a47d89499954dd8194c01ad28f6fede3bc8bd"
+      },
+      "any_suite_outcome": "detected",
+      "witnesses": [
+        "uni-agent-search/internal/app/TestIngressAccountingIncludesCacheAndFetchFailures"
+      ]
+    },
+    {
+      "name": "without_key_persistence_fail_closed",
+      "area": "A5",
+      "kind": "defense",
+      "outcome": "detected",
+      "suites": {
+        "go_race_all": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 91.742,
+          "passed_count": 117,
+          "failed_tests": [
+            "uni-agent-search/internal/app/TestReadinessAndStorageFailure"
+          ],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 2.84
+        },
+        "linux_pwsh_mock": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 8.167
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.829,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.04
+        }
+      },
+      "patched_files_sha256": {
+        "internal/app/key_pool.go": "c87d911ba0b87ef1c02da6488e693af37327d34d7f84a27af2ce68a950f6bfd1"
+      },
+      "any_suite_outcome": "detected",
+      "witnesses": [
+        "uni-agent-search/internal/app/TestReadinessAndStorageFailure"
+      ]
+    },
+    {
+      "name": "panic_value_in_logs",
+      "area": "A5",
+      "kind": "defense",
+      "outcome": "detected",
+      "suites": {
+        "go_race_all": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 94.702,
+          "passed_count": 117,
+          "failed_tests": [
+            "uni-agent-search/internal/app/TestPanicLogRedactsValuesAndHasRequestID"
+          ],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 2.616
+        },
+        "linux_pwsh_mock": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 7.025
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 1.603,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.016
+        }
+      },
+      "patched_files_sha256": {
+        "internal/app/observe.go": "6a6b4861543ab36146a1ed52f4f23dafce49e8fb94dced6816ce6687d188ab68"
+      },
+      "any_suite_outcome": "detected",
+      "witnesses": [
+        "uni-agent-search/internal/app/TestPanicLogRedactsValuesAndHasRequestID"
+      ]
+    },
+    {
+      "name": "backup_default_instead_of_actual_mount",
+      "area": "A6",
+      "kind": "defense",
+      "outcome": "detected",
+      "suites": {
+        "go_race_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 127.301,
+          "passed_count": 118,
+          "failed_tests": [],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 3.427
+        },
+        "linux_pwsh_mock": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 9.726
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 1.105,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.123
+        }
+      },
+      "patched_files_sha256": {
+        "deploy/wslc-common.ps1": "323a9c940c99ce58355b9bf9e17dccace34d3c0b3991560f53a358e0656d06ff"
+      },
+      "any_suite_outcome": "detected",
+      "witnesses": [
+        "windows_ps51_mock_dpapi",
+        "linux_pwsh_mock"
+      ]
+    },
+    {
+      "name": "health_without_instance_identity",
+      "area": "A6",
+      "kind": "defense",
+      "outcome": "detected",
+      "suites": {
+        "go_race_all": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 123.959,
+          "passed_count": 116,
+          "failed_tests": [
+            "uni-agent-search/internal/app/TestSearchAndManualShareProviderOutcome",
+            "uni-agent-search/internal/app/TestSearchAndManualShareProviderOutcome/402"
+          ],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 3.234
+        },
+        "linux_pwsh_mock": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 9.974
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 1.153,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.079
+        }
+      },
+      "patched_files_sha256": {
+        "deploy/wslc-common.ps1": "c9563c47d2a343a7da8808f6646311e76a46cd2b4966c3bb6a9f2036de597d34"
+      },
+      "any_suite_outcome": "detected",
+      "witnesses": [
+        "windows_ps51_mock_dpapi",
+        "linux_pwsh_mock"
+      ]
+    },
+    {
+      "name": "without_whole_dns_answer_validation",
+      "area": "A7",
+      "kind": "defense",
+      "outcome": "detected",
+      "suites": {
+        "go_race_all": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 116.556,
+          "passed_count": 109,
+          "failed_tests": [
+            "uni-agent-search/internal/app/TestDoHMalformedBoundedAndContext",
+            "uni-agent-search/internal/app/TestDoHMalformedBoundedAndContext/mixed",
+            "uni-agent-search/internal/app/TestPublicDNSPinningRebindingAndFallback",
+            "uni-agent-search/internal/app/TestPublicDNSValidatesEntireAnswerBeforeDial",
+            "uni-agent-search/internal/app/TestPublicRedirectRevalidatesDestination",
+            "uni-agent-search/internal/app/TestPublicRedirectRevalidatesDestination/http://127.0.0.1/private",
+            "uni-agent-search/internal/app/TestPublicRedirectRevalidatesDestination/http://[::1]/private",
+            "uni-agent-search/internal/app/TestPublicRedirectRevalidatesDestination/http://private.test/private",
+            "uni-agent-search/internal/app/TestSSRFAndHTMLReader"
+          ],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 2.371
+        },
+        "linux_pwsh_mock": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 7.072
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.54,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.023
+        }
+      },
+      "patched_files_sha256": {
+        "internal/app/net.go": "bf7a69d24cf6ec4ebe24a8fa41d530ff3b307d633681f5bfe951f1dd10754a7f"
+      },
+      "any_suite_outcome": "detected",
+      "witnesses": [
+        "uni-agent-search/internal/app/TestPublicDNSValidatesEntireAnswerBeforeDial",
+        "uni-agent-search/internal/app/TestPublicRedirectRevalidatesDestination",
+        "uni-agent-search/internal/app/TestPublicRedirectRevalidatesDestination/http://127.0.0.1/private",
+        "uni-agent-search/internal/app/TestPublicRedirectRevalidatesDestination/http://[::1]/private",
+        "uni-agent-search/internal/app/TestPublicRedirectRevalidatesDestination/http://private.test/private"
+      ]
+    },
+    {
+      "name": "redial_hostname_instead_of_pinned_ip",
+      "area": "A7",
+      "kind": "defense",
+      "outcome": "detected",
+      "suites": {
+        "go_race_all": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 115.886,
+          "passed_count": 112,
+          "failed_tests": [
+            "uni-agent-search/internal/app/TestPublicDNSPinningRebindingAndFallback",
+            "uni-agent-search/internal/app/TestPublicIPv6IsDialledAsPinnedLiteral",
+            "uni-agent-search/internal/app/TestPublicRedirectRevalidatesDestination",
+            "uni-agent-search/internal/app/TestPublicRedirectRevalidatesDestination/http://127.0.0.1/private",
+            "uni-agent-search/internal/app/TestPublicRedirectRevalidatesDestination/http://[::1]/private",
+            "uni-agent-search/internal/app/TestPublicRedirectRevalidatesDestination/http://private.test/private"
+          ],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 2.348
+        },
+        "linux_pwsh_mock": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 6.948
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.513,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.007
+        }
+      },
+      "patched_files_sha256": {
+        "internal/app/net.go": "0c13801ad10ff2fe70bb6da6ea3dfeedc675740845db91441b656a5370b0feaa"
+      },
+      "any_suite_outcome": "detected",
+      "witnesses": [
+        "uni-agent-search/internal/app/TestPublicDNSPinningRebindingAndFallback",
+        "uni-agent-search/internal/app/TestPublicIPv6IsDialledAsPinnedLiteral"
+      ]
+    },
+    {
+      "name": "without_provider_key_rotation",
+      "area": "A8",
+      "kind": "defense",
+      "outcome": "detected",
+      "suites": {
+        "go_race_all": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 118.747,
+          "passed_count": 113,
+          "failed_tests": [
+            "uni-agent-search/internal/app/TestInvalidKeyDisabledAndServiceFailureBounded",
+            "uni-agent-search/internal/app/TestInvalidKeyDisabledAndServiceFailureBounded/401",
+            "uni-agent-search/internal/app/TestInvalidKeyDisabledAndServiceFailureBounded/403",
+            "uni-agent-search/internal/app/TestKeyRotationCooldownAndPersistence",
+            "uni-agent-search/internal/app/TestProviderOutcomePolicy"
+          ],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 2.01
+        },
+        "linux_pwsh_mock": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 9.667
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.386,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.011
+        }
+      },
+      "patched_files_sha256": {
+        "internal/app/provider_outcome.go": "cbf9e14d84b711c8e4637e3f0747a04e319fb39ea0561d4e51f3131f37925471"
+      },
+      "any_suite_outcome": "detected",
+      "witnesses": [
+        "uni-agent-search/internal/app/TestKeyRotationCooldownAndPersistence",
+        "uni-agent-search/internal/app/TestProviderOutcomePolicy"
+      ]
+    },
+    {
+      "name": "duplicate_equivalent_policy_negative_control",
+      "area": "A8",
+      "kind": "negative_control",
+      "outcome": "survived",
+      "suites": {
+        "go_race_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 119.361,
+          "passed_count": 118,
+          "failed_tests": [],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 2.255
+        },
+        "linux_pwsh_mock": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 8.992
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.457,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.013
+        }
+      },
+      "patched_files_sha256": {
+        "internal/app/provider_outcome.go": "d0aef96cd4b35149cc011593f6c5f7d07e6c31a445b9ae214424c504d510f599",
+        "internal/app/key_test_call.go": "1099a7e8b655a3d43a6fbab4e7f9496bd2147ba7da76399e6a08bce166da646a"
+      },
+      "any_suite_outcome": "survived"
+    },
+    {
+      "name": "success_erases_cooldown",
+      "area": "A1",
+      "kind": "defense",
+      "outcome": "detected",
+      "suites": {
+        "go_race_all": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 112.357,
+          "passed_count": 112,
+          "failed_tests": [
+            "uni-agent-search/internal/app/TestAuditCooldownSurvivesConcurrentSuccess",
+            "uni-agent-search/internal/app/TestLeaseCooldownCompletionOrders",
+            "uni-agent-search/internal/app/TestLeaseCooldownCompletionOrders/failure-first",
+            "uni-agent-search/internal/app/TestSkillClientsAgainstMockHTTP",
+            "uni-agent-search/internal/app/TestSkillClientsAgainstMockHTTP/pwsh",
+            "uni-agent-search/internal/app/TestSkillClientsAgainstMockHTTP/pwsh/capabilities"
+          ],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 2.379
+        },
+        "linux_pwsh_mock": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 7.047
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.886,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.012
+        }
+      },
+      "patched_files_sha256": {
+        "internal/app/store.go": "e5b9ca59a08269b90e0a1289d13cddef56ed9a4607ee06d32d3610bfbb516956"
+      },
+      "any_suite_outcome": "detected",
+      "witnesses": [
+        "uni-agent-search/internal/app/TestAuditCooldownSurvivesConcurrentSuccess",
+        "uni-agent-search/internal/app/TestLeaseCooldownCompletionOrders",
+        "uni-agent-search/internal/app/TestLeaseCooldownCompletionOrders/failure-first"
+      ]
+    },
+    {
+      "name": "failure_shortens_cooldown",
+      "area": "A1",
+      "kind": "defense",
+      "outcome": "detected",
+      "suites": {
+        "go_race_all": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 110.826,
+          "passed_count": 113,
+          "failed_tests": [
+            "uni-agent-search/internal/app/TestLeaseCooldownCompletionOrders",
+            "uni-agent-search/internal/app/TestLeaseCooldownCompletionOrders/shorter-last",
+            "uni-agent-search/internal/app/TestSkillClientsAgainstMockHTTP",
+            "uni-agent-search/internal/app/TestSkillClientsAgainstMockHTTP/pwsh",
+            "uni-agent-search/internal/app/TestSkillClientsAgainstMockHTTP/pwsh/capabilities"
+          ],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 2.409
+        },
+        "linux_pwsh_mock": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 6.879
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.681,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.011
+        }
+      },
+      "patched_files_sha256": {
+        "internal/app/store.go": "105d9e7021b26ceb5fe9e9ff6acd7c1d5cb6ddc22c2e02bd40ca9ec500957e4e"
+      },
+      "any_suite_outcome": "detected",
+      "witnesses": [
+        "uni-agent-search/internal/app/TestLeaseCooldownCompletionOrders",
+        "uni-agent-search/internal/app/TestLeaseCooldownCompletionOrders/shorter-last"
+      ]
+    },
+    {
+      "name": "release_ignores_revision",
+      "area": "A2",
+      "kind": "defense",
+      "outcome": "detected",
+      "suites": {
+        "go_race_all": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 94.75,
+          "passed_count": 100,
+          "failed_tests": [
+            "uni-agent-search/internal/app/TestAuditReplacementIgnoresOldFailure",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/disable/200",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/disable/401",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/disable/429",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/replace/200",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/replace/401",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/replace/429",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/reset/200",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/reset/401",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/reset/429",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/toggle/200",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/toggle/401",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/toggle/429",
+            "uni-agent-search/internal/app/TestManualKeyLeaseFencesAndConcurrency",
+            "uni-agent-search/internal/app/TestManualKeyLeaseFencesAndConcurrency/200",
+            "uni-agent-search/internal/app/TestManualKeyLeaseFencesAndConcurrency/401",
+            "uni-agent-search/internal/app/TestManualKeyLeaseFencesAndConcurrency/429"
+          ],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 2.595
+        },
+        "linux_pwsh_mock": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 7.646
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.723,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.034
+        }
+      },
+      "patched_files_sha256": {
+        "internal/app/store.go": "a3c68b1b69ffa00aa3cbc87a83df614b8e4ee644eed50043a377d43e633caf95"
+      },
+      "any_suite_outcome": "detected",
+      "witnesses": [
+        "uni-agent-search/internal/app/TestAuditReplacementIgnoresOldFailure",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/disable/200",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/disable/401",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/disable/429",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/replace/200",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/replace/401",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/replace/429",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/reset/200",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/reset/401",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/reset/429",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/toggle/200",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/toggle/401",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/toggle/429",
+        "uni-agent-search/internal/app/TestManualKeyLeaseFencesAndConcurrency",
+        "uni-agent-search/internal/app/TestManualKeyLeaseFencesAndConcurrency/200",
+        "uni-agent-search/internal/app/TestManualKeyLeaseFencesAndConcurrency/401",
+        "uni-agent-search/internal/app/TestManualKeyLeaseFencesAndConcurrency/429"
+      ]
+    },
+    {
+      "name": "admin_does_not_bump_revision",
+      "area": "A2",
+      "kind": "defense",
+      "outcome": "detected",
+      "suites": {
+        "go_race_all": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 96.366,
+          "passed_count": 100,
+          "failed_tests": [
+            "uni-agent-search/internal/app/TestAuditReplacementIgnoresOldFailure",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/disable/200",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/disable/401",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/disable/429",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/replace/200",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/replace/401",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/replace/429",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/reset/200",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/reset/401",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/reset/429",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/toggle/200",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/toggle/401",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/toggle/429",
+            "uni-agent-search/internal/app/TestManualKeyLeaseFencesAndConcurrency",
+            "uni-agent-search/internal/app/TestManualKeyLeaseFencesAndConcurrency/200",
+            "uni-agent-search/internal/app/TestManualKeyLeaseFencesAndConcurrency/401",
+            "uni-agent-search/internal/app/TestManualKeyLeaseFencesAndConcurrency/429"
+          ],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 2.564
+        },
+        "linux_pwsh_mock": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 6.777
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.6,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.084
+        }
+      },
+      "patched_files_sha256": {
+        "internal/app/http.go": "f5839e4b0c4dcedab113fb59dba5a38e86e5b3e8c703ce9c0d21674378b9bf7d"
+      },
+      "any_suite_outcome": "detected",
+      "witnesses": [
+        "uni-agent-search/internal/app/TestAuditReplacementIgnoresOldFailure",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/disable/200",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/disable/401",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/disable/429",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/replace/200",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/replace/401",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/replace/429",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/reset/200",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/reset/401",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/reset/429",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/toggle/200",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/toggle/401",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/toggle/429"
+      ]
+    },
+    {
+      "name": "lease_can_release_twice",
+      "area": "A2",
+      "kind": "defense",
+      "outcome": "detected",
+      "suites": {
+        "go_race_all": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 104.888,
+          "passed_count": 89,
+          "failed_tests": [
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/delete/200",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/delete/401",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/delete/429",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/disable/200",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/disable/401",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/disable/429",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/metadata/200",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/metadata/401",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/metadata/429",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/replace/200",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/replace/401",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/replace/429",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/reset/200",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/reset/401",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/reset/429",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/toggle/200",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/toggle/401",
+            "uni-agent-search/internal/app/TestLeaseAdministrativeFences/toggle/429",
+            "uni-agent-search/internal/app/TestLeaseCooldownCompletionOrders",
+            "uni-agent-search/internal/app/TestLeaseCooldownCompletionOrders/failure-first",
+            "uni-agent-search/internal/app/TestLeaseCooldownCompletionOrders/longer-last",
+            "uni-agent-search/internal/app/TestLeaseCooldownCompletionOrders/shorter-last",
+            "uni-agent-search/internal/app/TestLeaseCooldownCompletionOrders/success-first",
+            "uni-agent-search/internal/app/TestSearchAndManualShareProviderOutcome",
+            "uni-agent-search/internal/app/TestSearchAndManualShareProviderOutcome/402",
+            "uni-agent-search/internal/app/TestSearchAndManualShareProviderOutcome/429",
+            "uni-agent-search/internal/app/TestSearchAndManualShareProviderOutcome/432",
+            "uni-agent-search/internal/app/TestSearchAndManualShareProviderOutcome/433"
+          ],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 2.841
+        },
+        "linux_pwsh_mock": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 7.824
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.615,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.009
+        }
+      },
+      "patched_files_sha256": {
+        "internal/app/key_pool.go": "a73a45e540280a35953848c5d67bdd5d7e9ba2b8f55ea7e6e01af0c1e402b6eb"
+      },
+      "any_suite_outcome": "detected",
+      "witnesses": [
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/delete/200",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/delete/401",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/delete/429",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/disable/200",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/disable/401",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/disable/429",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/metadata/200",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/metadata/401",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/metadata/429",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/replace/200",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/replace/401",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/replace/429",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/reset/200",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/reset/401",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/reset/429",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/toggle/200",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/toggle/401",
+        "uni-agent-search/internal/app/TestLeaseAdministrativeFences/toggle/429",
+        "uni-agent-search/internal/app/TestLeaseCooldownCompletionOrders",
+        "uni-agent-search/internal/app/TestLeaseCooldownCompletionOrders/failure-first",
+        "uni-agent-search/internal/app/TestLeaseCooldownCompletionOrders/longer-last",
+        "uni-agent-search/internal/app/TestLeaseCooldownCompletionOrders/shorter-last",
+        "uni-agent-search/internal/app/TestLeaseCooldownCompletionOrders/success-first"
+      ]
+    },
+    {
+      "name": "cache_accepts_old_epoch_write",
+      "area": "A3",
+      "kind": "defense",
+      "outcome": "detected",
+      "suites": {
+        "go_race_all": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 107.218,
+          "passed_count": 110,
+          "failed_tests": [
+            "uni-agent-search/internal/app/TestCacheEpochFencesInFlightAPI",
+            "uni-agent-search/internal/app/TestCacheEpochFencesInFlightAPI/clear",
+            "uni-agent-search/internal/app/TestCacheEpochFencesInFlightAPI/disable",
+            "uni-agent-search/internal/app/TestCacheEpochFencesInFlightAPI/endpoint",
+            "uni-agent-search/internal/app/TestSearchAndManualShareProviderOutcome",
+            "uni-agent-search/internal/app/TestSearchAndManualShareProviderOutcome/402",
+            "uni-agent-search/internal/app/TestSearchAndManualShareProviderOutcome/429",
+            "uni-agent-search/internal/app/TestSearchAndManualShareProviderOutcome/432"
+          ],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 2.47
+        },
+        "linux_pwsh_mock": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 6.188
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.5,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.013
+        }
+      },
+      "patched_files_sha256": {
+        "internal/app/search.go": "c388a1465bf75fc7bfc2de916c3ca26619e7211c8ba301f1c0000da5ec172e55"
+      },
+      "any_suite_outcome": "detected",
+      "witnesses": [
+        "uni-agent-search/internal/app/TestCacheEpochFencesInFlightAPI",
+        "uni-agent-search/internal/app/TestCacheEpochFencesInFlightAPI/clear",
+        "uni-agent-search/internal/app/TestCacheEpochFencesInFlightAPI/disable",
+        "uni-agent-search/internal/app/TestCacheEpochFencesInFlightAPI/endpoint"
+      ]
+    },
+    {
+      "name": "invalidation_does_not_advance_epoch",
+      "area": "A3",
+      "kind": "defense",
+      "outcome": "detected",
+      "suites": {
+        "go_race_all": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 63.743,
+          "passed_count": 114,
+          "failed_tests": [
+            "uni-agent-search/internal/app/TestCacheEpochFencesInFlightAPI",
+            "uni-agent-search/internal/app/TestCacheEpochFencesInFlightAPI/clear",
+            "uni-agent-search/internal/app/TestCacheEpochFencesInFlightAPI/disable",
+            "uni-agent-search/internal/app/TestCacheEpochFencesInFlightAPI/endpoint"
+          ],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 2.231
+        },
+        "linux_pwsh_mock": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 7.336
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.532,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.009
+        }
+      },
+      "patched_files_sha256": {
+        "internal/app/store.go": "b8c57f53c1bcaa1ae1bad14b4f084df7d9e5330df17e72e0aac915fdc602ea12"
+      },
+      "any_suite_outcome": "detected",
+      "witnesses": [
+        "uni-agent-search/internal/app/TestCacheEpochFencesInFlightAPI",
+        "uni-agent-search/internal/app/TestCacheEpochFencesInFlightAPI/clear",
+        "uni-agent-search/internal/app/TestCacheEpochFencesInFlightAPI/disable",
+        "uni-agent-search/internal/app/TestCacheEpochFencesInFlightAPI/endpoint"
+      ]
+    },
+    {
+      "name": "gate_does_not_join_handlers",
+      "area": "A4",
+      "kind": "defense",
+      "outcome": "detected",
+      "suites": {
+        "go_race_all": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 64.168,
+          "passed_count": 113,
+          "failed_tests": [
+            "uni-agent-search/cmd/server/TestRequestGateWaitsAndRejectsLateHandlers",
+            "uni-agent-search/cmd/server/TestServerSIGTERMLifecycle",
+            "uni-agent-search/cmd/server/TestServerSIGTERMLifecycle/timeout",
+            "uni-agent-search/internal/app/TestSearchAndManualShareProviderOutcome",
+            "uni-agent-search/internal/app/TestSearchAndManualShareProviderOutcome/402"
+          ],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 2.117
+        },
+        "linux_pwsh_mock": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 7.198
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.393,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.009
+        }
+      },
+      "patched_files_sha256": {
+        "cmd/server/main.go": "1206aa166010d12d14f4d91f0e1cd2863237e7f895d37fd573459befa415bac9"
+      },
+      "any_suite_outcome": "detected",
+      "witnesses": [
+        "uni-agent-search/cmd/server/TestRequestGateWaitsAndRejectsLateHandlers"
+      ]
+    },
+    {
+      "name": "shutdown_timeout_without_cancel_or_close",
+      "area": "A4",
+      "kind": "defense",
+      "outcome": "detected",
+      "suites": {
+        "go_race_all": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 67.393,
+          "passed_count": 116,
+          "failed_tests": [
+            "uni-agent-search/cmd/server/TestServerSIGTERMLifecycle",
+            "uni-agent-search/cmd/server/TestServerSIGTERMLifecycle/timeout"
+          ],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 2.832
+        },
+        "linux_pwsh_mock": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 35.295
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 1.188,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.008
+        }
+      },
+      "patched_files_sha256": {
+        "cmd/server/main.go": "bd9f4a44a018bcef8e62c24ad4f58a522d0924a7cacd78cf57d3b9f56cf086ce"
+      },
+      "any_suite_outcome": "detected",
+      "witnesses": [
+        "uni-agent-search/cmd/server/TestServerSIGTERMLifecycle/timeout"
+      ]
+    },
+    {
+      "name": "rollback_disabled",
+      "area": "A6",
+      "kind": "defense",
+      "outcome": "detected",
+      "suites": {
+        "go_race_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 64.749,
+          "passed_count": 118,
+          "failed_tests": [],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 2.822
+        },
+        "linux_pwsh_mock": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 36.92
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 1.215,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.02
+        }
+      },
+      "patched_files_sha256": {
+        "deploy/wslc-common.ps1": "c5e2fa339fced5f7ccac43c165b30e44ad53d4c96944d7b5ef3c5a79ddb3aabf"
+      },
+      "any_suite_outcome": "detected",
+      "witnesses": [
+        "windows_ps51_mock_dpapi",
+        "linux_pwsh_mock"
+      ]
+    },
+    {
+      "name": "recovery_accepts_foreign_container",
+      "area": "A6",
+      "kind": "defense",
+      "outcome": "detected",
+      "suites": {
+        "go_race_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 60.783,
+          "passed_count": 118,
+          "failed_tests": [],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 2.6
+        },
+        "linux_pwsh_mock": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 6.853
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.503,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.016
+        }
+      },
+      "patched_files_sha256": {
+        "deploy/wslc-common.ps1": "1558761c2fe0d4dd58af35a29dc64896d24902403356a42c7c2f987179e28576"
+      },
+      "any_suite_outcome": "detected",
+      "witnesses": [
+        "windows_ps51_mock_dpapi",
+        "linux_pwsh_mock"
+      ]
+    },
+    {
+      "name": "ensure_recreates_after_health_failure",
+      "area": "A6",
+      "kind": "defense",
+      "outcome": "detected",
+      "suites": {
+        "go_race_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 60.975,
+          "passed_count": 118,
+          "failed_tests": [],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 2.905
+        },
+        "linux_pwsh_mock": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 7.057
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.624,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.011
+        }
+      },
+      "patched_files_sha256": {
+        "deploy/wslc-common.ps1": "58807baae2852f194ab0d150fd697eb846553808f02d519471b1799781d1137b"
+      },
+      "any_suite_outcome": "detected",
+      "witnesses": [
+        "windows_ps51_mock_dpapi",
+        "linux_pwsh_mock"
+      ]
+    },
+    {
+      "name": "doh_response_limit_relaxed",
+      "area": "A7",
+      "kind": "defense",
+      "outcome": "survived",
+      "suites": {
+        "go_race_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 46.057,
+          "passed_count": 118,
+          "failed_tests": [],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 2.127
+        },
+        "linux_pwsh_mock": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 4.538
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.511,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.037
+        }
+      },
+      "patched_files_sha256": {
+        "internal/app/net.go": "2ca6e4f67936f2d263f6a95cf1ee5cd642ce6854ef4bcc10fee387f76caa2061"
+      },
+      "any_suite_outcome": "survived",
+      "witnesses": [],
+      "attempt_history": [
+        {
+          "name": "doh_response_limit_relaxed",
+          "area": "A7",
+          "kind": "defense",
+          "outcome": "unwitnessed_failure",
+          "suites": {
+            "go_race_all": {
+              "status": "assertion_failure",
+              "exit_code": 1,
+              "seconds": 96.713,
+              "passed_count": 113,
+              "failed_tests": [
+                "uni-agent-search/internal/app/TestSearchAndManualShareProviderOutcome",
+                "uni-agent-search/internal/app/TestSearchAndManualShareProviderOutcome/432",
+                "uni-agent-search/internal/app/TestSkillClientsAgainstMockHTTP",
+                "uni-agent-search/internal/app/TestSkillClientsAgainstMockHTTP/pwsh",
+                "uni-agent-search/internal/app/TestSkillClientsAgainstMockHTTP/pwsh/capabilities"
+              ],
+              "skipped_tests": []
+            },
+            "windows_ps51_mock_dpapi": {
+              "status": "pass",
+              "exit_code": 0,
+              "seconds": 2.275
+            },
+            "linux_pwsh_mock": {
+              "status": "pass",
+              "exit_code": 0,
+              "seconds": 5.771
+            },
+            "node_dom_all": {
+              "status": "pass",
+              "exit_code": 0,
+              "seconds": 0.374,
+              "failed_tests": []
+            },
+            "sh_syntax": {
+              "status": "pass",
+              "exit_code": 0,
+              "seconds": 0.009
+            }
+          },
+          "patched_files_sha256": {
+            "internal/app/net.go": "2ca6e4f67936f2d263f6a95cf1ee5cd642ce6854ef4bcc10fee387f76caa2061"
+          },
+          "any_suite_outcome": "detected",
+          "witnesses": []
+        }
+      ]
+    },
+    {
+      "name": "redirect_budget_relaxed",
+      "area": "A7",
+      "kind": "defense",
+      "outcome": "detected",
+      "suites": {
+        "go_race_all": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 95.944,
+          "passed_count": 114,
+          "failed_tests": [
+            "uni-agent-search/internal/app/TestPublicRedirectBudget",
+            "uni-agent-search/internal/app/TestSkillClientsAgainstMockHTTP",
+            "uni-agent-search/internal/app/TestSkillClientsAgainstMockHTTP/pwsh",
+            "uni-agent-search/internal/app/TestSkillClientsAgainstMockHTTP/pwsh/capabilities"
+          ],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 2.27
+        },
+        "linux_pwsh_mock": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 5.676
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.475,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.008
+        }
+      },
+      "patched_files_sha256": {
+        "internal/app/net.go": "11dde36c718a2bab75c87399d3c93752a33bb18bec5f578d16ac0fa23336bc30"
+      },
+      "any_suite_outcome": "detected",
+      "witnesses": [
+        "uni-agent-search/internal/app/TestPublicRedirectBudget"
+      ]
+    },
+    {
+      "name": "special_purpose_cidrs_ignored",
+      "area": "A7",
+      "kind": "defense",
+      "outcome": "detected",
+      "suites": {
+        "go_race_all": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 65.782,
+          "passed_count": 116,
+          "failed_tests": [
+            "uni-agent-search/internal/app/TestPublicSpecialPurposePolicy",
+            "uni-agent-search/internal/app/TestSSRFAndHTMLReader"
+          ],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 2.254
+        },
+        "linux_pwsh_mock": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 8.082
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.487,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.01
+        }
+      },
+      "patched_files_sha256": {
+        "internal/app/net.go": "208888f9d22b1ffdbe7ca4c4e1d037b8ab72f178eced8e7ee346fab373ee7025"
+      },
+      "any_suite_outcome": "detected",
+      "witnesses": [
+        "uni-agent-search/internal/app/TestPublicSpecialPurposePolicy",
+        "uni-agent-search/internal/app/TestSSRFAndHTMLReader"
+      ]
+    },
+    {
+      "name": "credential_nonce_not_fresh",
+      "area": "A8",
+      "kind": "defense",
+      "outcome": "detected",
+      "suites": {
+        "go_race_all": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 66.496,
+          "passed_count": 117,
+          "failed_tests": [
+            "uni-agent-search/internal/credential/TestLegacyCiphertextCompatibility"
+          ],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 2.403
+        },
+        "linux_pwsh_mock": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 7.268
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.585,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.013
+        }
+      },
+      "patched_files_sha256": {
+        "internal/credential/cipher.go": "87f7aa4fee92b76dd0ca4ee851a3cf8260d9215a7a9e9d3545ead00ddd049590"
+      },
+      "any_suite_outcome": "detected",
+      "witnesses": [
+        "uni-agent-search/internal/credential/TestLegacyCiphertextCompatibility"
+      ]
+    },
+    {
+      "name": "credential_tag_error_ignored",
+      "area": "A8",
+      "kind": "defense",
+      "outcome": "detected",
+      "suites": {
+        "go_race_all": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 63.748,
+          "passed_count": 117,
+          "failed_tests": [
+            "uni-agent-search/internal/credential/TestLegacyCiphertextCompatibility"
+          ],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 2.354
+        },
+        "linux_pwsh_mock": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 10.037
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 1.251,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.037
+        }
+      },
+      "patched_files_sha256": {
+        "internal/credential/cipher.go": "cbf2c3bda7043b1231ef0904e840c2138b231934f04edaa03f1ae76617b19156"
+      },
+      "any_suite_outcome": "detected",
+      "witnesses": [
+        "uni-agent-search/internal/credential/TestLegacyCiphertextCompatibility"
+      ]
+    },
+    {
+      "name": "web_allows_unsafe_links",
+      "area": "A8",
+      "kind": "defense",
+      "outcome": "detected",
+      "suites": {
+        "go_race_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 65.314,
+          "passed_count": 118,
+          "failed_tests": [],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 2.44
+        },
+        "linux_pwsh_mock": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 9.72
+        },
+        "node_dom_all": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 0.93,
+          "failed_tests": [
+            "safe links and model citations remain unverified text"
+          ]
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.031
+        }
+      },
+      "patched_files_sha256": {
+        "internal/app/web/app.js": "6b462b556ae5981c1acd4d4ed3ccc564c933194628c28f609460e422bc9d18a9"
+      },
+      "any_suite_outcome": "detected",
+      "witnesses": [
+        "safe links and model citations remain unverified text"
+      ]
+    },
+    {
+      "name": "web_hides_citation_warning",
+      "area": "A8",
+      "kind": "defense",
+      "outcome": "detected",
+      "suites": {
+        "go_race_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 46.882,
+          "passed_count": 118,
+          "failed_tests": [],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 2.1
+        },
+        "linux_pwsh_mock": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 4.159
+        },
+        "node_dom_all": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 0.393,
+          "failed_tests": [
+            "safe links and model citations remain unverified text"
+          ]
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.01
+        }
+      },
+      "patched_files_sha256": {
+        "internal/app/web/app.js": "92567af97d9207bbf1430506783b1637087d7a36e4ddd493b0a26d2cd07f0924"
+      },
+      "any_suite_outcome": "detected",
+      "witnesses": [
+        "safe links and model citations remain unverified text"
+      ]
+    },
+    {
+      "name": "inline_key_pool_negative_control",
+      "area": "A8",
+      "kind": "negative_control",
+      "outcome": "survived",
+      "suites": {
+        "go_race_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 47.161,
+          "passed_count": 118,
+          "failed_tests": [],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 2.033
+        },
+        "linux_pwsh_mock": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 4.03
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.314,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.01
+        }
+      },
+      "patched_files_sha256": {
+        "internal/app/key_pool.go": "75d99e22087438b67ab1768073505b6ad05fa235b57f02efe129400534b6053c",
+        "internal/app/store.go": "35a114fb024b980d1a835e11e6a6bf2d3b66860da86b3cad8ae7b26b44ef5469"
+      },
+      "any_suite_outcome": "survived"
+    }
+  ],
+  "environment": {
+    "go": "go version go1.22.2 linux/amd64",
+    "node": "v24.22.0",
+    "client_pwsh": "PowerShell 7.5.4",
+    "deployment_powershell": "Windows PowerShell 5.1 (DPAPI) plus Linux pwsh"
+  },
+  "resume_workers": [
+    1
+  ],
+  "summary": {
+    "inventory_total": 30,
+    "executed_variants": 30,
+    "full_inventory_executed": true,
+    "baselines_all_passed": true,
+    "defense_variants": 28,
+    "detected": 27,
+    "survivors": [
+      "doh_response_limit_relaxed"
+    ],
+    "invalid_or_incomplete": [],
+    "unwitnessed_failures": [],
+    "negative_controls": {
+      "duplicate_equivalent_policy_negative_control": "survived",
+      "inline_key_pool_negative_control": "survived"
+    }
+  }
+}

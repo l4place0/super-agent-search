@@ -16,6 +16,8 @@ jobs:
       - name: Verify client test dependencies
         run: command -v curl && command -v jq && command -v pwsh
       - run: go test -race ./...
+      - name: Ablation attribution unit tests (no mutations)
+        run: python3 -m unittest discover -s scripts -p 'test_ablate_full.py'
       - name: Offline web DOM contracts
         run: node --test internal/app/web_test/web.test.mjs
       - run: go vet ./...

@@ -13,3 +13,5 @@ client-token.local
 *.pem
 deploy/verification*.md
 recovery-*.clixml
+__pycache__/
+docs/audit/*.json.partial

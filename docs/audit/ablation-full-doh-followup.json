@@ -1,0 +1,154 @@
+{
+  "revision": "2b27afacfdb1ca12e7dce4e282da243982802a02",
+  "method": "single-factor finite A1-A8 inventory; complete offline suites for each variant",
+  "workers": 1,
+  "repetitions_per_variant": 1,
+  "baseline": [
+    {
+      "name": "baseline_before",
+      "area": "all",
+      "kind": "baseline",
+      "outcome": "survived",
+      "suites": {
+        "go_race_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 21.625,
+          "passed_count": 121,
+          "failed_tests": [],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.975
+        },
+        "linux_pwsh_mock": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 2.723
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.197,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.01
+        }
+      },
+      "patched_files_sha256": {},
+      "any_suite_outcome": "survived"
+    },
+    {
+      "name": "baseline_after",
+      "area": "all",
+      "kind": "baseline",
+      "outcome": "survived",
+      "suites": {
+        "go_race_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 23.691,
+          "passed_count": 121,
+          "failed_tests": [],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.944
+        },
+        "linux_pwsh_mock": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 2.677
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.178,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.008
+        }
+      },
+      "patched_files_sha256": {},
+      "any_suite_outcome": "survived"
+    }
+  ],
+  "cases": [
+    {
+      "name": "doh_response_limit_relaxed",
+      "area": "A7",
+      "kind": "defense",
+      "outcome": "detected",
+      "suites": {
+        "go_race_all": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 20.157,
+          "passed_count": 119,
+          "failed_tests": [
+            "uni-agent-search/internal/app/TestDoHRejectsOversizedValidJSON",
+            "uni-agent-search/internal/app/TestDoHRejectsOversizedValidJSON/over_limit"
+          ],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 1.026
+        },
+        "linux_pwsh_mock": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 2.561
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.167,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.007
+        }
+      },
+      "patched_files_sha256": {
+        "internal/app/net.go": "2ca6e4f67936f2d263f6a95cf1ee5cd642ce6854ef4bcc10fee387f76caa2061"
+      },
+      "any_suite_outcome": "detected",
+      "witnesses": [
+        "uni-agent-search/internal/app/TestDoHRejectsOversizedValidJSON",
+        "uni-agent-search/internal/app/TestDoHRejectsOversizedValidJSON/over_limit"
+      ]
+    }
+  ],
+  "environment": {
+    "go": "go version go1.22.2 linux/amd64",
+    "node": "v24.22.0",
+    "client_pwsh": "PowerShell 7.5.4",
+    "deployment_powershell": "Windows PowerShell 5.1 (DPAPI) plus Linux pwsh"
+  },
+  "summary": {
+    "inventory_total": 30,
+    "executed_variants": 1,
+    "full_inventory_executed": false,
+    "baselines_all_passed": true,
+    "defense_variants": 1,
+    "detected": 1,
+    "survivors": [],
+    "invalid_or_incomplete": [],
+    "unwitnessed_failures": [],
+    "negative_controls": {}
+  }
+}
