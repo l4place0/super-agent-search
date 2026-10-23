@@ -43,7 +43,7 @@ $arguments="-NoProfile -WindowStyle Hidden -File `"$directory\source\deploy\star
 $action=New-ScheduledTaskAction -Execute 'powershell.exe' -Argument $arguments
 Register-ScheduledTask -TaskName $taskName -Action $action -Principal $principal | Out-Null
 Start-ScheduledTask -TaskName $taskName
-Write-Output "Deployment dispatched: $taskName. Check $directory\source\deploy\start-wslc.log and the /healthz endpoint."
+Write-Output "Deployment dispatched: $taskName. Check the scheduled task result, WSLC container logs and the /readyz endpoint (startup no longer creates a transcript)."
 '@
   $remoteScript = $remoteScript.Replace('__DIRECTORY__',$RemoteDirectory.Replace("'","''")).Replace('__SESSION__',$Session).Replace('__TAG__',$Tag).Replace('__BIND__',$BindAddress).Replace('__PORT__',[string]$Port)
   & scp -o BatchMode=yes $archive "${RemoteHost}:sas-source-upload.tar.gz"

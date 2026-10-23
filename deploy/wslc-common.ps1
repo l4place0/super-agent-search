@@ -1,8 +1,16 @@
 # Shared, fail-closed deployment operations. Never print inspect/env contents.
 function Invoke-UasWSLC {
   param([string]$Session,[string[]]$Arguments)
-  $output = & wslc --session $Session @Arguments
-  if ($LASTEXITCODE -ne 0) { throw 'WSLC operation failed (inspect local container state before retrying)' }
+  if (-not (Get-Command wslc -ErrorAction SilentlyContinue)) { throw 'WSLC executable not found' }
+  $preference = $ErrorActionPreference
+  try {
+    # Native stderr may echo argv, including authenticated proxy URLs. Keep
+    # diagnostics generic and inspect state locally instead of leaking them.
+    $ErrorActionPreference = 'Continue'
+    $output = & wslc --session $Session @Arguments 2>$null
+    $code = $LASTEXITCODE
+  } finally { $ErrorActionPreference = $preference }
+  if ($code -ne 0) { throw 'WSLC operation failed (inspect local container state before retrying)' }
   return $output
 }
 function Invoke-UasDocker {

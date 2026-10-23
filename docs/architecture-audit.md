@@ -155,11 +155,15 @@ rm internal/app/audit_repro_test.go
 
 ### 第四批：A5 已修复并验证
 
+提交：[9c3314e](https://github.com/l4place0/uni-agent-search/commit/9c3314e)；后续 typed storage error 传播补丁见 Git 历史。
+
 `/healthz` 保留 liveness，新增 `/readyz` 检查数据库表可读和 Key 状态持久化故障；返回实例 ID。Key release 写失败后 fail closed，需排除故障并重启；审计日志写失败采用脱敏错误日志，不伪造记录。overview/logs 不再忽略读取错误。搜索和 fetch 的 HTTP 入口统一观测，包含鉴权失败、并发拒绝、缓存命中、非 2xx/不支持类型/空正文等失败；保留 2000 条窗口统计，另提供 `traffic_since_start` 内存计数。日志含生成的 request ID、状态和耗时，不含请求头/原始 URL/驱动错误/上游正文；panic 仅记录函数帧位置，不记录 panic 值与参数。
 
 回归：[observe_test.go](../internal/app/observe_test.go)，覆盖数据库故障、Key 写失败停调度、入口计数与缓存/抓取失败、panic 脱敏。WSL 全套 race、vet、build 通过。未部署。
 
 ### 第五批：A6 已实现并通过离线验证，真实 WSLC 未验证
+
+提交：[0f6e393](https://github.com/l4place0/uni-agent-search/commit/0f6e393)；后续 native stderr 脱敏加固见 Git 历史。
 
 update/recreate/ensure 共用 inspect 驱动的 plan：实际 volume/bind 挂载、发布地址、允许的环境（Proxy/DoH）、资源和重启策略保留；不支持的配置停机前拒绝。使用原挂载的完整备份，不再固定 `sas-data`。DPAPI 恢复计划与固定 image ID 支持多阶段失败恢复；恢复先清除目标残留再还原快照。健康验收比较容器内和宿主入口的 readyz 实例 ID/版本；ensure 健康失败不再自动重建。保留旧容器名，不混入自动改名。新增显式 restore 脚本，禁止外来容器身份被删除。
 
@@ -167,15 +171,23 @@ update/recreate/ensure 共用 inspect 驱动的 plan：实际 volume/bind 挂载
 
 ### 第六批：A7 已补齐本轮边界回归并验证
 
+提交：[7b89e41](https://github.com/l4place0/uni-agent-search/commit/7b89e41)。
+
 引入每 client 的 resolver/dialer 与 DoH doer 注入点，不使用可变全局 hook；生产仍是 resolve → 整组验证 → 固定 IP 连接。新增保守拒绝的 IPv6/转换/文档/特殊用途网段（含 NAT64-local、discard、site-local、Teredo/ORCHID、6to4 等）；不宣称该手写策略是完整或永久有效的 IANA 注册表。
 
 回归：[DNS/DoH/重定向/IP 分类](../internal/app/net_boundary_test.go)、[IPv6 固定连接/重定向预算/可信 upstream 隔离](../internal/app/net_transport_test.go)。混合公网/私网解析在拨号前拒绝、单次解析固定连接与下一次解析 rebinding、redirect 到 IPv4/IPv6/域名私网、DoH 超限/非法响应/取消均离线测试。定向测试连续 10 次、全套 race、vet、build 通过。实际 upstream 仍允许管理员配置内网服务；未做外网渗透或运行环境出站防火墙验证。
 
 ### 第七批：A8 本轮渐进整理已完成并验证
 
+提交：[87e546a](https://github.com/l4place0/uni-agent-search/commit/87e546a)；前端独立格式化：[da39317](https://github.com/l4place0/uni-agent-search/commit/da39317)，Acorn 解析 AST（忽略位置/raw）与格式化前一致。
+
 先统一 `provider_outcome.go` 的状态/冷却/轮换策略，消除搜索与指定 Key 测试重复分类；KeyPool 的锁/占用/游标/故障状态与 Repository SQL 分离。新增 `internal/credential`，server/diagnose 共用 AES-GCM 格式，旧密文兼容测试通过。不引入跨进程架构或形式化全量接口。
 
 [代码边界与保留耦合](code-boundaries.md)列出 Repository、KeyPool、ProviderAdapter、SearchService、PageFetcher/HTTP 当前职责及后续方向。新增搜索/手动状态一致性测试、真实 sh/pwsh → mock HTTP 客户端测试和 JS 离线 DOM/API 合约测试。前端纯格式化另行独立提交。WSL race、vet、build 通过；sh 客户端 mock 通过，宿主未安装 pwsh，PowerShell 7 HTTP 行为交由 CI 验证。完整浏览器 E2E 和进一步的 PageFetcher/配置层拆分未做，不能把设计建议当作全量架构重写完成。
+
+### P2 收尾验证
+
+最终 WSL 全套 `go test -race -count=1 -cover ./...`、vet、server/diagnose build、sh 语法、Node DOM 合约、Windows PowerShell 5.1 mock/parser/DPAPI 均通过。app statements 80.9%，credential 89.5%；diagnose 仍无命令级测试，不能把共用 crypto 的测试算作实际诊断调用验证。Key repository 读取/写入错误通过 typed error 传播为 503，不混作上游故障。未调用真实 provider，未部署。
 
 ## 推荐执行顺序
 

@@ -66,6 +66,27 @@ func TestReadinessAndStorageFailure(t *testing.T) {
 	}
 }
 
+func TestKeyReadFailureIsNotAnUpstreamFailure(t *testing.T) {
+	a := testApp(t)
+	setupTavily(t, a, func(w http.ResponseWriter, r *http.Request) { t.Error("broken repository reached upstream") })
+	if _, err := a.db.Exec(`DROP TABLE api_keys`); err != nil {
+		t.Fatal(err)
+	}
+	for _, path := range []string{"/v1/search", "/api/admin/providers/tavily/test"} {
+		body := `{}`
+		if path == "/v1/search" {
+			body = `{"query":"repository failure"}`
+		}
+		w := call(a, "POST", path, a.adminToken, body)
+		if w.Code != 503 {
+			t.Fatalf("repository failure mapped to %d: %s", w.Code, w.Body)
+		}
+	}
+	if a.metrics.UpstreamFailures.Load() != 0 {
+		t.Fatal("database fault counted as upstream failure")
+	}
+}
+
 func TestIngressAccountingIncludesCacheAndFetchFailures(t *testing.T) {
 	a := testApp(t)
 	a.logger = slog.New(slog.NewTextHandler(io.Discard, nil))

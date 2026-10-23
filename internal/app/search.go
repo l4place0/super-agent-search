@@ -285,7 +285,7 @@ func parseDDG(b []byte) []Hit {
 	walk(root)
 	return hits
 }
-func (a *App) providerSearch(ctx context.Context, p Provider, query string, count int) ([]Hit, []Attempt) {
+func (a *App) providerSearch(ctx context.Context, p Provider, query string, count int) ([]Hit, []Attempt, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(p.Timeout)*time.Second)
 	defer cancel()
 	attempts := []Attempt{}
@@ -299,6 +299,9 @@ func (a *App) providerSearch(ctx context.Context, p Provider, query string, coun
 			k, err = a.acquire(p.ID, excluded)
 			if err != nil {
 				attempts = append(attempts, Attempt{Provider: p.ID, Error: err.Error()})
+				if errors.Is(err, errStorage) {
+					return nil, attempts, err
+				}
 				break
 			}
 			excluded[k.ID] = true
@@ -314,18 +317,18 @@ func (a *App) providerSearch(ctx context.Context, p Provider, query string, coun
 			if releaseErr := a.release(k, outcome.status, outcome.cooldown, outcome.reason); releaseErr != nil {
 				attempt.OK, attempt.Error = false, releaseErr.Error()
 				attempts = append(attempts, attempt)
-				return nil, attempts
+				return nil, attempts, releaseErr
 			}
 		}
 		attempts = append(attempts, attempt)
 		if err == nil {
-			return hits, attempts
+			return hits, attempts, nil
 		}
 		if isKeyless || !outcome.retry || ctx.Err() != nil {
 			break
 		}
 	}
-	return nil, attempts
+	return nil, attempts, nil
 }
 func canonical(raw string) string {
 	u, e := validURL(raw)
@@ -529,14 +532,18 @@ func (a *App) search(ctx context.Context, in SearchInput) (SearchOutput, error) 
 	rows := map[string][]Hit{}
 	out := SearchOutput{Query: in.Query, Attempts: []Attempt{}, Warnings: []string{}, ScoreVersion: "grouped-rank-v1"}
 	var mu sync.Mutex
+	var storageErr error
 	var wg sync.WaitGroup
 	for _, p := range selected {
 		wg.Add(1)
 		go func(p Provider) {
 			defer wg.Done()
-			hits, attempts := a.providerSearch(ctx, p, in.Query, min(20, max(10, in.MaxResults)))
+			hits, attempts, err := a.providerSearch(ctx, p, in.Query, min(20, max(10, in.MaxResults)))
 			mu.Lock()
 			defer mu.Unlock()
+			if err != nil {
+				storageErr = err
+			}
 			rows[p.ID] = hits
 			out.Attempts = append(out.Attempts, attempts...)
 			if len(hits) == 0 {
@@ -545,6 +552,9 @@ func (a *App) search(ctx context.Context, in SearchInput) (SearchOutput, error) 
 		}(p)
 	}
 	wg.Wait()
+	if storageErr != nil {
+		return SearchOutput{}, storageErr
+	}
 	if a.poolFault.Load() {
 		return SearchOutput{}, errStorage
 	}
@@ -576,8 +586,8 @@ func (a *App) testProvider(ctx context.Context, id string) ([]Attempt, error) {
 	}
 	for _, p := range ps {
 		if p.ID == id {
-			_, attempts := a.providerSearch(ctx, p, "Go programming language documentation", 3)
-			return attempts, nil
+			_, attempts, err := a.providerSearch(ctx, p, "Go programming language documentation", 3)
+			return attempts, err
 		}
 	}
 	return nil, fmt.Errorf("provider not found")

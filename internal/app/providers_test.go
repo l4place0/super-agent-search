@@ -182,7 +182,10 @@ func TestSearxngKeylessAndEndpoint(t *testing.T) {
 	}))
 	defer up.Close()
 	p := Provider{ID: "searxng", Kind: "searxng", BaseURL: up.URL + "/search", Timeout: 2}
-	hits, attempts := a.providerSearch(context.Background(), p, "test", 5)
+	hits, attempts, err := a.providerSearch(context.Background(), p, "test", 5)
+	if err != nil {
+		t.Fatal(err)
+	}
 	if len(hits) != 1 || len(attempts) != 1 || !attempts[0].OK || attempts[0].KeyID != 0 {
 		t.Fatalf("%+v %+v", hits, attempts)
 	}

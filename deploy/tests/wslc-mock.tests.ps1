@@ -1,6 +1,7 @@
 $ErrorActionPreference='Stop'
 . (Join-Path (Split-Path -Parent $PSScriptRoot) 'wslc-common.ps1')
 $savePlanFunction = ${function:Save-UasPlan}
+$nativeInvoker = ${function:Invoke-UasWSLC}
 foreach ($file in Get-ChildItem (Split-Path -Parent $PSScriptRoot) -Recurse -Filter *.ps1) {
   $tokens=$null; $parseErrors=$null
   [Management.Automation.Language.Parser]::ParseFile($file.FullName,[ref]$tokens,[ref]$parseErrors) | Out-Null
@@ -123,4 +124,13 @@ if ([Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT) {
     Assert ($plain -eq 'HTTP_PROXY=http://proxy.invalid:8888') 'DPAPI roundtrip failed'
   } finally { Remove-Item -LiteralPath $temp -ErrorAction SilentlyContinue }
 }
+function wslc {
+  Write-Error 'private-native-error-should-not-be-logged'
+  $global:LASTEXITCODE=1
+  return 'private-native-output'
+}
+$failed=$false
+try { & $nativeInvoker 'mock-session' @('run','-e','HTTP_PROXY=fake-secret') | Out-Null }
+catch { $failed=$true; Assert (-not $_.Exception.Message.Contains('private-native')) 'Native error was not redacted' }
+Assert $failed 'Native exit failure was ignored'
 Write-Output 'WSLC mock tests passed (no live operations).'

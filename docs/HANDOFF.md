@@ -2,7 +2,16 @@
 
 ## 给接手会话的任务
 
-用户希望在新会话中继续修复本次架构审计的问题。初始交接记录上下文与实施计划。**当前 P1 的 A1–A4 已修复并通过 WSL 本地验证；P2 的 A5–A8 尚未修复**。请先复核当前工作区，再按各批进度从剩余项开始，分批提交，不要同时进行大范围架构重写或线上迁移。
+用户希望在新会话中继续修复本次架构审计的问题。初始交接记录上下文与实施计划。**当前 A1–A5 已修复并验证；A6 已实现并通过离线 mock/DPAPI 验证（真实 WSLC 未验证）；A7 本轮网络边界回归已补齐；A8 本轮渐进整理已完成（非全量架构重写）**。请先复核当前工作区，再按各批进度从剩余项开始，分批提交，不要同时进行大范围架构重写或线上迁移。
+
+### 当前剩余事项与验收边界
+
+- 代码提交：A5 `9c3314e`，A6 `0f6e393`，A7 `7b89e41`，A8 `87e546a`，前端纯格式化 `da39317`。后续审查补丁以 Git 历史为准。
+- 没有连接真实 WSLC，没有部署、停止服务或迁移线上数据。需要隔离会话验证 WSLC preview 对 mount、stop-timeout、image ID、inspect 格式的兼容，以及真实卷备份/恢复。
+- A6 update/recreate 现在保留实际配置和容器名，不再接受 Bind/Proxy/DoH 覆盖；ensure 不再因健康失败自动重建。恢复计划使用 Windows 当前用户 DPAPI，不能换机器/用户解密；恢复会丢弃升级后的写入。
+- A5 新增 `/readyz`；Key 状态写失败 fail closed，排除故障后需重启。`/healthz` 仍为 liveness。
+- A8 明确保留的耦合及后续方向见 [代码边界](code-boundaries.md)；完整浏览器 E2E、Windows 信号行为、外网渗透与出站防火墙仍未验证。
+- 下文 P1/P2 计划保留为历史验收清单，不表示仍需从 A1 重做。最新状态和回归链接以审计报告“修复进度”为准。
 
 先读：
 
@@ -98,7 +107,7 @@ Rename-Item -LiteralPath .\super-agent-search -NewName uni-agent-search
 
 当前后续工作从 P2 开始。A1/A2 提交 `63132e9`，A3 提交 `8a03f24`；A4 提交 `edc4ef0`。三批已推送 `origin/main`，GitHub CI run `39949541164` 全部通过；没有部署。用户已授权验证后提交并推送，但没有授权部署。
 
-### 后续 P2（不要与 P1 大包混改）
+### P2 原实施计划（历史清单，当前进度见文首与审计报告）
 
 | 编号 | 内容 | 建议验收 |
 | --- | --- | --- |
@@ -107,7 +116,7 @@ Rename-Item -LiteralPath .\super-agent-search -NewName uni-agent-search
 | A7 | SSRF/DoH/DNS rebinding/redirect/IPv6 边界测试 | 注入 resolver/dialer，无外网稳定复现；这是覆盖缺口，不是已验证绕过 |
 | A8 | 渐进明确 Repository/KeyPool/Provider/Search/Fetcher 边界，减少失败分类重复 | 行为与 API 不变；先抽取共同语义，避免纯形式拆包；前端格式化独立提交 |
 
-A6 特别注意：本次 `update-wslc.ps1 -ContainerName super-agent-search` 只增加旧名称识别。固定备份 `sas-data`、重建回落默认配置的问题仍存在，不要误判已修。
+A6 历史基线只有旧名称识别；当前已改为 inspect 保真、实际挂载备份和恢复计划。不要再使用旧的固定卷/默认参数升级流程；新流程仍需真实 WSLC 隔离验证。
 
 ## 已知验证状态与环境
 
@@ -172,4 +181,4 @@ GIT_TERMINAL_PROMPT=0 git -c credential.helper= \
 
 ## 可直接粘贴到新会话的启动提示
 
-> 继续 uni-agent-search 的架构审计修复。请先读 docs/HANDOFF.md 和 docs/architecture-audit.md 并核对工作区与提交历史。P1 的 A1–A4 已修复、测试并推送；后续按 P2 的 A5–A8 分批推进，不重复执行旧的故意失败复现步骤。保持单实例架构与现有 SAS_* / 数据卷兼容，不读出私有凭据、不调用付费 provider、不直接部署线上。完成后按问题编号报告验证结果和剩余项。
+> 继续 uni-agent-search 的验收/后续改进。请先读 docs/HANDOFF.md、docs/architecture-audit.md、docs/code-boundaries.md 并核对工作区与提交历史。A1–A5 已修复；A6 已实现离线验证但真实 WSLC/卷恢复未验证；A7 本轮回归已补齐；A8 已完成渐进整理，保留耦合见边界文档。不要重复旧的故意失败步骤，也不要把 mock 当作线上验收。保持单实例与 SAS_* / 既有数据兼容，不读取私有凭据、不调用付费 provider、不直接部署线上。
