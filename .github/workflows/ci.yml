@@ -15,11 +15,11 @@ jobs:
           cache: true
       - run: go test -race ./...
       - run: go vet ./...
-      - run: sh -n skills/super-agent-search/scripts/sas.sh
+      - run: sh -n skills/uni-agent-search/scripts/uas.sh
       - name: Check PowerShell syntax
         shell: pwsh
         run: |
-          $files = @(Get-ChildItem deploy -Filter *.ps1) + @(Get-Item skills/super-agent-search/scripts/sas.ps1)
+          $files = @(Get-ChildItem deploy -Filter *.ps1) + @(Get-Item skills/uni-agent-search/scripts/uas.ps1)
           foreach ($file in $files) {
             $tokens = $null; $parseErrors = $null
             [System.Management.Automation.Language.Parser]::ParseFile($file.FullName, [ref]$tokens, [ref]$parseErrors) | Out-Null

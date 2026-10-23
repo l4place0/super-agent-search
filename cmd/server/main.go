@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	"super-agent-search/internal/app"
+	"uni-agent-search/internal/app"
 )
 
 func main() {
@@ -31,7 +31,7 @@ func main() {
 		defer cancel()
 		_ = s.Shutdown(shutdown)
 	}()
-	log.Printf("Super Agent Search %s listening on %s; credentials: %s/credentials.json", app.Version, addr, a.DataDir)
+	log.Printf("Uni Agent Search %s listening on %s; credentials: %s/credentials.json", app.Version, addr, a.DataDir)
 	if err := s.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatal(err)
 	}

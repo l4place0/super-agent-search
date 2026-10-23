@@ -1,4 +1,4 @@
-# Super Agent Search
+# Uni Agent Search
 
 面向 Agent 的自托管搜索服务。Go 服务端包含 Web 控制台；客户端是可随 Skill 分发的 sh/pwsh 脚本。
 
@@ -24,8 +24,8 @@ Compose 默认监听 `127.0.0.1:8098`。WSLC 远程部署方式见 [deploy/READM
 ```sh
 export SAS_URL=http://localhost:8098
 export SAS_TOKEN_FILE=/path/to/client-token
-sh skills/super-agent-search/scripts/sas.sh search "Go graceful shutdown" --max-results 6
-sh skills/super-agent-search/scripts/sas.sh fetch https://go.dev/doc/
+sh skills/uni-agent-search/scripts/uas.sh search "Go graceful shutdown" --max-results 6
+sh skills/uni-agent-search/scripts/uas.sh fetch https://go.dev/doc/
 ```
 
 Windows PowerShell 7：
@@ -33,10 +33,12 @@ Windows PowerShell 7：
 ```powershell
 $env:SAS_URL='http://localhost:8098'
 $env:SAS_TOKEN_FILE='C:\path\client-token'
-pwsh -NoProfile -File skills/super-agent-search/scripts/sas.ps1 search 'Go graceful shutdown'
+pwsh -NoProfile -File skills/uni-agent-search/scripts/uas.ps1 search 'Go graceful shutdown'
 ```
 
-sh 客户端依赖 curl、jq。将整个 `skills/super-agent-search` 目录复制到 Agent 的 Skill 目录即可，CLI 使用手册在 [SKILL.md](skills/super-agent-search/SKILL.md)。
+sh 客户端依赖 curl、jq。将整个 `skills/uni-agent-search` 目录复制到 Agent 的 Skill 目录即可，CLI 使用手册在 [SKILL.md](skills/uni-agent-search/SKILL.md)。
+
+改名后的上游为 https://github.com/l4place0/uni-agent-search 。现有 `SAS_*` 环境变量、`sas-server` 构建产物名及 `sas-data` 数据卷保留兼容，不需要重置令牌或数据库。已有部署请先阅读 [改名迁移说明](docs/rename-migration.md)，不要直接在新目录运行 Compose 创建空数据卷。架构审计见 [architecture-audit.md](docs/architecture-audit.md)。
 
 ## API
 

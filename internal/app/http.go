@@ -390,7 +390,7 @@ func (a *App) fetchHandler(w http.ResponseWriter, r *http.Request) {
 		fail(w, 400, "invalid URL")
 		return
 	}
-	req.Header.Set("User-Agent", "SuperAgentSearch/"+Version)
+	req.Header.Set("User-Agent", "UniAgentSearch/"+Version)
 	res, e := a.client.public.Do(req)
 	if e != nil {
 		a.record("fetch", in.URL, false, int(time.Since(start).Milliseconds()), 0, map[string]string{"error": "public page fetch failed"})

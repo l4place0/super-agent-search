@@ -1,9 +1,9 @@
 ---
-name: super-agent-search
-description: Search public web sources and read page text through a self-hosted Super Agent Search server. Use when a task needs current external information, source discovery, or reading a supplied public URL.
+name: uni-agent-search
+description: Search public web sources and read page text through a self-hosted Uni Agent Search server. Use when a task needs current external information, source discovery, or reading a supplied public URL.
 ---
 
-# Super Agent Search CLI
+# Uni Agent Search CLI
 
 This skill is the manual for the bundled HTTP client. The Go server owns provider selection, parallel search, key rotation and result fusion. The calling Agent owns question decomposition, follow-up searches and final synthesis.
 
@@ -13,25 +13,27 @@ Set `SAS_URL` to the server address (default: `http://localhost:8098`). Supply t
 
 The scripts are relative to this skill directory:
 
-- Linux/macOS/WSL: `sh scripts/sas.sh ...` (requires curl and jq).
-- Windows: `pwsh -NoProfile -File scripts/sas.ps1 ...` (PowerShell 7+).
+- Linux/macOS/WSL: `sh scripts/uas.sh ...` (requires curl and jq).
+- Windows: `pwsh -NoProfile -File scripts/uas.ps1 ...` (PowerShell 7+).
+
+The `SAS_*` environment variables remain unchanged for compatibility with existing deployments.
 
 ## Commands
 
 ```sh
-sh scripts/sas.sh health
-sh scripts/sas.sh capabilities
-sh scripts/sas.sh search "Go HTTP server graceful shutdown" --max-results 8
-sh scripts/sas.sh search "React useEffect cleanup" --include-domains react.dev --providers tavily,brave
-sh scripts/sas.sh search "最新 AI 公告" --no-cache
-sh scripts/sas.sh fetch "https://go.dev/doc/" --focus "modules" --limit 16000
-sh scripts/sas.sh fetch "https://go.dev/doc/" --offset 16000 --limit 16000
+sh scripts/uas.sh health
+sh scripts/uas.sh capabilities
+sh scripts/uas.sh search "Go HTTP server graceful shutdown" --max-results 8
+sh scripts/uas.sh search "React useEffect cleanup" --include-domains react.dev --providers tavily,brave
+sh scripts/uas.sh search "最新 AI 公告" --no-cache
+sh scripts/uas.sh fetch "https://go.dev/doc/" --focus "modules" --limit 16000
+sh scripts/uas.sh fetch "https://go.dev/doc/" --offset 16000 --limit 16000
 ```
 
 PowerShell uses the same positional arguments and long options:
 
 ```powershell
-pwsh -NoProfile -File scripts/sas.ps1 search "Go HTTP server graceful shutdown" --max-results 8
+pwsh -NoProfile -File scripts/uas.ps1 search "Go HTTP server graceful shutdown" --max-results 8
 ```
 
 All commands return JSON. Search options: `--max-results` (1–20, default 8), `--providers` (comma-separated enabled provider IDs), `--include-domains`, `--exclude-domains` (comma-separated hostnames), `--no-cache`. Fetch options: `--focus`, `--offset` (character offset), `--limit` (100–50000, default 16000).

@@ -1,6 +1,8 @@
 param(
   [Parameter(Mandatory)][string]$Session,
-  [string]$Image='127.0.0.1:5000/super-agent-search:0.2.4',
+  [ValidateSet('uni-agent-search','super-agent-search')]
+  [string]$ContainerName='uni-agent-search',
+  [string]$Image='127.0.0.1:5000/uni-agent-search:0.2.4',
   [string]$BackupVolume=('sas-backup-'+(Get-Date -Format yyyyMMddHHmmss)),
   [string]$Bind='127.0.0.1:8098:8080',
   [string]$HealthURL='http://127.0.0.1:8098/healthz',
@@ -9,17 +11,17 @@ param(
 )
 $ErrorActionPreference='Stop'
 $ProgressPreference='SilentlyContinue'
-$old = wslc --session $Session inspect --format json super-agent-search | ConvertFrom-Json
-if($LASTEXITCODE -ne 0 -or $old[0].Labels.app -ne 'super-agent-search'){throw 'Expected application container not found'}
+$old = wslc --session $Session inspect --format json $ContainerName | ConvertFrom-Json
+if($LASTEXITCODE -ne 0 -or $old[0].Labels.app -ne $ContainerName){throw 'Expected application container not found'}
 $oldImage=$old[0].Config.Image
 Write-Output "Backing up sas-data to $BackupVolume; previous image: $oldImage"
-wslc --session $Session stop super-agent-search
+wslc --session $Session stop $ContainerName
 if($LASTEXITCODE -ne 0){throw 'Container stop failed'}
 wslc --session $Session system session run docker volume create $BackupVolume
 if($LASTEXITCODE -ne 0){throw 'Backup volume creation failed'}
 wslc --session $Session system session run docker run --rm --user 0:0 --entrypoint /bin/cp --mount type=volume,source=sas-data,target=/source,readonly --mount "type=volume,source=$BackupVolume,target=/backup" $oldImage -a /source/. /backup/
 if($LASTEXITCODE -ne 0){throw 'Data backup failed; original volume preserved'}
-wslc --session $Session remove super-agent-search
+wslc --session $Session remove $ContainerName
 if($LASTEXITCODE -ne 0){throw 'Container removal failed'}
 & (Join-Path $PSScriptRoot 'start-wslc.ps1') -Session $Session -Image $Image -Bind $Bind -ProxyURL $ProxyURL -DoHURL $DoHURL
 $ready=$false

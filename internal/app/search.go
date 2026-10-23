@@ -125,7 +125,7 @@ func (a *App) requestProvider(ctx context.Context, p Provider, key, query string
 		return nil, err
 	}
 	req.Header.Set("Accept", "application/json,application/xml,text/html")
-	req.Header.Set("User-Agent", "SuperAgentSearch/"+Version)
+	req.Header.Set("User-Agent", "UniAgentSearch/"+Version)
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}

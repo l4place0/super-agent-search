@@ -2,10 +2,10 @@
 $ErrorActionPreference = 'Stop'
 function Usage {
 @'
-Usage: sas.ps1 health|capabilities
-       sas.ps1 search QUERY [--max-results 8] [--providers tavily,brave]
+Usage: uas.ps1 health|capabilities
+       uas.ps1 search QUERY [--max-results 8] [--providers tavily,brave]
                [--include-domains go.dev] [--exclude-domains example.com] [--no-cache]
-       sas.ps1 fetch URL [--focus WORDS] [--offset 0] [--limit 16000]
+       uas.ps1 fetch URL [--focus WORDS] [--offset 0] [--limit 16000]
 Environment: SAS_URL, SAS_TOKEN_FILE or SAS_TOKEN.
 '@
 }

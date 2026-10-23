@@ -14,8 +14,8 @@
 mkdir -p dist
 CGO_ENABLED=0 go build -trimpath -ldflags='-s -w' -o dist/sas-server ./cmd/server
 cp /etc/ssl/certs/ca-certificates.crt dist/ca-certificates.crt
-docker build -f Dockerfile.prebuilt -t super-agent-search:0.2.4 .
-docker save -o dist/sas-image-0.2.4.tar super-agent-search:0.2.4
+docker build -f Dockerfile.prebuilt -t uni-agent-search:0.2.4 .
+docker save -o dist/sas-image-0.2.4.tar uni-agent-search:0.2.4
 ```
 
 在 Windows PowerShell 7 中指定自己的 SSH 目标和 WSLC 会话：
@@ -24,7 +24,7 @@ docker save -o dist/sas-image-0.2.4.tar super-agent-search:0.2.4
 pwsh -NoProfile -File deploy/deploy-wslc.ps1 `
   -RemoteHost user@your-server `
   -Session your-wslc-session `
-  -RemoteDirectory C:\containers\super-agent-search\releases\0.2.4
+  -RemoteDirectory C:\containers\uni-agent-search\releases\0.2.4
 ```
 
 脚本导入并推送镜像、创建 `sas-data` 数据卷，通过普通用户交互式计划任务启动容器。默认发布到宿主机 `127.0.0.1:8098`；需要其他地址时传入 `-BindAddress`。已存在源码 staging 目录或同名容器时部署停止。临时任务名输出到终端，验收后可自行移除。
@@ -36,7 +36,7 @@ WSLC 的网络登录上下文可能拒绝直接运行容器。脚本使用 `wslc
 首次启动生成 `/data/credentials.json`。仅在自己的可信终端读取：
 
 ```powershell
-wslc --session your-wslc-session exec super-agent-search cat /data/credentials.json
+wslc --session your-wslc-session exec uni-agent-search cat /data/credentials.json
 ```
 
 `admin_token` 登录面板；把 `client_token` 单独保存到客户端私有文件并设置 `SAS_TOKEN_FILE`。不要将凭据、数据库或 `master.key` 提交到 Git。备份完整 `sas-data` 数据卷以保留数据库和对应加密密钥。
@@ -49,7 +49,7 @@ wslc --session your-wslc-session exec super-agent-search cat /data/credentials.j
 
 ```powershell
 .\update-wslc.ps1 -Session your-wslc-session `
-  -Image 127.0.0.1:5000/super-agent-search:0.2.4
+  -Image 127.0.0.1:5000/uni-agent-search:0.2.4
 ```
 
 升级脚本先停止本服务，备份 `sas-data` 到带时间戳的新卷，再替换容器并检查健康接口。它不自动回滚；失败时保留旧镜像和数据备份。自定义端口或绑定地址时，同时传入 `-Bind` 和对应 `-HealthURL`。
@@ -58,6 +58,6 @@ wslc --session your-wslc-session exec super-agent-search cat /data/credentials.j
 
 ```powershell
 wslc --session your-wslc-session list
-wslc --session your-wslc-session logs super-agent-search
-wslc --session your-wslc-session inspect --format json super-agent-search
+wslc --session your-wslc-session logs uni-agent-search
+wslc --session your-wslc-session inspect --format json uni-agent-search
 ```

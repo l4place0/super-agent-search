@@ -1,4 +1,4 @@
-module super-agent-search
+module uni-agent-search
 
 go 1.22
 

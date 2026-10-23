@@ -2,10 +2,10 @@
 set -eu
 usage() {
   cat <<'EOF'
-Usage: sas.sh health|capabilities
-       sas.sh search QUERY [--max-results 8] [--providers tavily,brave]
+Usage: uas.sh health|capabilities
+       uas.sh search QUERY [--max-results 8] [--providers tavily,brave]
              [--include-domains go.dev] [--exclude-domains example.com] [--no-cache]
-       sas.sh fetch URL [--focus WORDS] [--offset 0] [--limit 16000]
+       uas.sh fetch URL [--focus WORDS] [--offset 0] [--limit 16000]
 Environment: SAS_URL, SAS_TOKEN_FILE or SAS_TOKEN. Requires curl and jq.
 EOF
 }

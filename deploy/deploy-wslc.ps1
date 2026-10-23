@@ -2,7 +2,7 @@
 param(
   [Parameter(Mandatory)][string]$RemoteHost,
   [Parameter(Mandatory)][string]$Session,
-  [string]$RemoteDirectory = 'C:\containers\super-agent-search',
+  [string]$RemoteDirectory = 'C:\containers\uni-agent-search',
   [int]$Port = 8098,
   [string]$BindAddress = '127.0.0.1',
   [string]$Tag = '0.2.4',
@@ -15,7 +15,7 @@ if ($ImageArchive -eq '') { $ImageArchive = Join-Path $root "dist/sas-image-$Tag
 if (-not (Test-Path -LiteralPath $ImageArchive)) { throw 'Build the versioned image archive first; see deploy/README.md' }
 $archive = Join-Path ([IO.Path]::GetTempPath()) ('sas-source-'+[guid]::NewGuid().ToString('N')+'.tar.gz')
 try {
-  & tar --exclude=verification*.md --exclude=*.log -czf $archive -C $root go.mod go.sum Dockerfile Dockerfile.prebuilt cmd internal skills deploy README.md LICENSE compose.yaml .dockerignore .gitignore .gitattributes
+  & tar --exclude=verification*.md --exclude=*.log -czf $archive -C $root go.mod go.sum Dockerfile Dockerfile.prebuilt cmd internal skills deploy docs README.md LICENSE compose.yaml .dockerignore .gitignore .gitattributes
   if ($LASTEXITCODE -ne 0) { throw 'Source packaging failed' }
   $remoteScript = @'
 $ErrorActionPreference='Stop'
@@ -30,16 +30,16 @@ tar -xzf "$env:USERPROFILE\sas-source-upload.tar.gz" -C "$directory\source"
 if ($LASTEXITCODE -ne 0) { throw 'Source extraction failed' }
 cmd /d /c "type `"$env:USERPROFILE\sas-image.tar`" | wslc --session $session system session run docker load"
 if ($LASTEXITCODE -ne 0) { throw 'Image import failed' }
-wslc --session $session system session run docker tag "super-agent-search:$tag" "127.0.0.1:5000/super-agent-search:$tag"
+wslc --session $session system session run docker tag "uni-agent-search:$tag" "127.0.0.1:5000/uni-agent-search:$tag"
 if ($LASTEXITCODE -ne 0) { throw 'Image tagging failed' }
-wslc --session $session system session run docker push "127.0.0.1:5000/super-agent-search:$tag"
+wslc --session $session system session run docker push "127.0.0.1:5000/uni-agent-search:$tag"
 if ($LASTEXITCODE -ne 0) { throw 'Registry push failed' }
 wslc --session $session system session run docker volume create sas-data
 if ($LASTEXITCODE -ne 0) { throw 'Volume creation failed' }
-$taskName='SuperAgentSearch-Deploy-'+[guid]::NewGuid().ToString('N')
+$taskName='UniAgentSearch-Deploy-'+[guid]::NewGuid().ToString('N')
 $user=[System.Security.Principal.WindowsIdentity]::GetCurrent().Name
 $principal=New-ScheduledTaskPrincipal -UserId $user -LogonType Interactive -RunLevel Limited
-$arguments="-NoProfile -WindowStyle Hidden -File `"$directory\source\deploy\start-wslc.ps1`" -Session $session -Image 127.0.0.1:5000/super-agent-search:$tag -Bind __BIND__:__PORT__:8080"
+$arguments="-NoProfile -WindowStyle Hidden -File `"$directory\source\deploy\start-wslc.ps1`" -Session $session -Image 127.0.0.1:5000/uni-agent-search:$tag -Bind __BIND__:__PORT__:8080"
 $action=New-ScheduledTaskAction -Execute 'powershell.exe' -Argument $arguments
 Register-ScheduledTask -TaskName $taskName -Action $action -Principal $principal | Out-Null
 Start-ScheduledTask -TaskName $taskName

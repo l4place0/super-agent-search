@@ -56,7 +56,7 @@ func (a *App) requestExtended(ctx context.Context, p Provider, key, query string
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("User-Agent", "SuperAgentSearch/"+Version)
+	req.Header.Set("User-Agent", "UniAgentSearch/"+Version)
 	if !keyless(p.Kind) {
 		req.Header.Set("Authorization", "Bearer "+key)
 	}
