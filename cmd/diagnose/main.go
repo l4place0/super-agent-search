@@ -5,10 +5,7 @@ package main
 import (
 	"bytes"
 	"context"
-	"crypto/aes"
-	"crypto/cipher"
 	"database/sql"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -19,6 +16,8 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"uni-agent-search/internal/credential"
 )
 
 func main() {
@@ -47,19 +46,11 @@ func run() error {
 	if e != nil {
 		return e
 	}
-	block, e := aes.NewCipher(master)
+	keyCipher, e := credential.New(master)
 	if e != nil {
 		return e
 	}
-	aead, e := cipher.NewGCM(block)
-	if e != nil {
-		return e
-	}
-	b, e := base64.StdEncoding.DecodeString(encrypted)
-	if e != nil || len(b) < aead.NonceSize() {
-		return fmt.Errorf("invalid ciphertext")
-	}
-	plain, e := aead.Open(nil, b[:aead.NonceSize()], b[aead.NonceSize():], nil)
+	plain, e := keyCipher.Decrypt(encrypted)
 	if e != nil {
 		return e
 	}

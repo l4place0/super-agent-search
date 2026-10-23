@@ -305,30 +305,13 @@ func (a *App) providerSearch(ctx context.Context, p Provider, query string, coun
 		}
 		hits, err := a.requestProvider(ctx, p, k.secret, query, count)
 		attempt := Attempt{Provider: p.ID, KeyID: k.ID, OK: err == nil, Elapsed: time.Since(start).Milliseconds(), Count: len(hits)}
-		status := 200
-		cooldown := int64(0)
-		retry := false
+		outcome := classifyProviderOutcome(err, time.Now())
+		attempt.Error = outcome.reason
 		if err != nil {
 			a.metrics.UpstreamFailures.Add(1)
-			attempt.Error = err.Error()
-			status = 0
-			var ue upstreamError
-			if errors.As(err, &ue) {
-				status = ue.status
-				if status == 429 || status == 402 || status == 432 || status == 433 {
-					cooldown = ue.retry
-					retry = true
-				}
-				if status == 401 || status == 403 {
-					retry = true
-				}
-			}
-			if status == 0 || status >= 500 {
-				cooldown = time.Now().Add(10 * time.Second).Unix()
-			}
 		}
 		if !isKeyless {
-			if releaseErr := a.release(k, status, cooldown, attempt.Error); releaseErr != nil {
+			if releaseErr := a.release(k, outcome.status, outcome.cooldown, outcome.reason); releaseErr != nil {
 				attempt.OK, attempt.Error = false, releaseErr.Error()
 				attempts = append(attempts, attempt)
 				return nil, attempts
@@ -338,7 +321,7 @@ func (a *App) providerSearch(ctx context.Context, p Provider, query string, coun
 		if err == nil {
 			return hits, attempts
 		}
-		if isKeyless || !retry || ctx.Err() != nil {
+		if isKeyless || !outcome.retry || ctx.Err() != nil {
 			break
 		}
 	}

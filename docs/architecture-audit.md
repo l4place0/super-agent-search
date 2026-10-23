@@ -171,6 +171,12 @@ update/recreate/ensure 共用 inspect 驱动的 plan：实际 volume/bind 挂载
 
 回归：[DNS/DoH/重定向/IP 分类](../internal/app/net_boundary_test.go)、[IPv6 固定连接/重定向预算/可信 upstream 隔离](../internal/app/net_transport_test.go)。混合公网/私网解析在拨号前拒绝、单次解析固定连接与下一次解析 rebinding、redirect 到 IPv4/IPv6/域名私网、DoH 超限/非法响应/取消均离线测试。定向测试连续 10 次、全套 race、vet、build 通过。实际 upstream 仍允许管理员配置内网服务；未做外网渗透或运行环境出站防火墙验证。
 
+### 第七批：A8 本轮渐进整理已完成并验证
+
+先统一 `provider_outcome.go` 的状态/冷却/轮换策略，消除搜索与指定 Key 测试重复分类；KeyPool 的锁/占用/游标/故障状态与 Repository SQL 分离。新增 `internal/credential`，server/diagnose 共用 AES-GCM 格式，旧密文兼容测试通过。不引入跨进程架构或形式化全量接口。
+
+[代码边界与保留耦合](code-boundaries.md)列出 Repository、KeyPool、ProviderAdapter、SearchService、PageFetcher/HTTP 当前职责及后续方向。新增搜索/手动状态一致性测试、真实 sh/pwsh → mock HTTP 客户端测试和 JS 离线 DOM/API 合约测试。前端纯格式化另行独立提交。WSL race、vet、build 通过；sh 客户端 mock 通过，宿主未安装 pwsh，PowerShell 7 HTTP 行为交由 CI 验证。完整浏览器 E2E 和进一步的 PageFetcher/配置层拆分未做，不能把设计建议当作全量架构重写完成。
+
 ## 推荐执行顺序
 
 1. 修 A1/A2：统一 Key lease/revision 和单调冷却，补并发回归。

@@ -61,24 +61,12 @@ func (a *App) testKey(ctx context.Context, id int64) (Attempt, error) {
 	start := time.Now()
 	hits, e := a.requestProvider(ctx, provider, k.secret, "Go programming language documentation", 3)
 	out := Attempt{Provider: provider.ID, KeyID: id, OK: e == nil, Count: len(hits), Elapsed: time.Since(start).Milliseconds()}
-	status := 200
-	cooldown := int64(0)
+	outcome := classifyProviderOutcome(e, time.Now())
+	out.Error = outcome.reason
 	if e != nil {
 		a.metrics.UpstreamFailures.Add(1)
-		out.Error = e.Error()
-		status = 0
-		var ue upstreamError
-		if errors.As(e, &ue) {
-			status = ue.status
-			if status == 429 || status == 402 || status == 432 || status == 433 {
-				cooldown = ue.retry
-			}
-		}
-		if status == 0 || status >= 500 {
-			cooldown = time.Now().Add(10 * time.Second).Unix()
-		}
 	}
-	if err := a.release(k, status, cooldown, out.Error); err != nil {
+	if err := a.release(k, outcome.status, outcome.cooldown, outcome.reason); err != nil {
 		return Attempt{}, err
 	}
 	a.record("key_test", provider.ID, out.OK, int(out.Elapsed), out.Count, out)

@@ -1,12 +1,9 @@
 package app
 
 import (
-	"crypto/aes"
-	"crypto/cipher"
 	"crypto/rand"
 	"crypto/subtle"
 	"database/sql"
-	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
@@ -16,10 +13,10 @@ import (
 	"path/filepath"
 	"strings"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	_ "modernc.org/sqlite"
+	"uni-agent-search/internal/credential"
 )
 
 const Version = "0.2.4"
@@ -52,20 +49,13 @@ type Key struct {
 	lease         *keyLease
 }
 
-// A lease is shared by Key copies and consumed under poolMu exactly once.
-// Occupancy is per ID across revisions; credential state is revision-scoped.
-type keyLease struct {
-	released bool
-}
 type App struct {
 	DataDir     string
 	db          *sql.DB
-	aead        cipher.AEAD
+	cipher      *credential.Cipher
 	adminToken  string
 	clientToken string
-	poolMu      sync.Mutex
-	flight      map[int64]int
-	turns       map[int64]float64
+	keyPool
 	cacheMu     sync.Mutex
 	cacheEpoch  uint64
 	cache       map[string]cacheEntry
@@ -73,7 +63,6 @@ type App struct {
 	client      *httpClient
 	logger      *slog.Logger
 	metrics     requestMetrics
-	poolFault   atomic.Bool
 	instanceID  string
 }
 
@@ -118,11 +107,7 @@ func New(dir string) (*App, error) {
 	} else if err != nil {
 		return nil, err
 	}
-	block, err := aes.NewCipher(master)
-	if err != nil {
-		return nil, err
-	}
-	aead, err := cipher.NewGCM(block)
+	keyCipher, err := credential.New(master)
 	if err != nil {
 		return nil, err
 	}
@@ -158,7 +143,7 @@ func New(dir string) (*App, error) {
 		return nil, err
 	}
 	db.SetMaxOpenConns(1)
-	a := &App{DataDir: dir, db: db, aead: aead, adminToken: creds.Admin, clientToken: creds.Client, flight: map[int64]int{}, turns: map[int64]float64{}, cache: map[string]cacheEntry{}, searchSlots: make(chan struct{}, 16), client: newHTTPClient(), logger: slog.Default(), instanceID: token()}
+	a := &App{DataDir: dir, db: db, cipher: keyCipher, adminToken: creds.Admin, clientToken: creds.Client, keyPool: keyPool{flight: map[int64]int{}, turns: map[int64]float64{}}, cache: map[string]cacheEntry{}, searchSlots: make(chan struct{}, 16), client: newHTTPClient(), logger: slog.Default(), instanceID: token()}
 	_, err = db.Exec(`PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;
 CREATE TABLE IF NOT EXISTS providers(id TEXT PRIMARY KEY,name TEXT NOT NULL,kind TEXT NOT NULL,base_url TEXT NOT NULL,enabled INTEGER NOT NULL,timeout_seconds INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS api_keys(id INTEGER PRIMARY KEY AUTOINCREMENT,provider_id TEXT NOT NULL,label TEXT NOT NULL,secret TEXT NOT NULL,masked TEXT NOT NULL,enabled INTEGER NOT NULL DEFAULT 1,weight INTEGER NOT NULL DEFAULT 1,max_concurrent INTEGER NOT NULL DEFAULT 2,cooldown_until INTEGER NOT NULL DEFAULT 0,last_error TEXT NOT NULL DEFAULT '',uses INTEGER NOT NULL DEFAULT 0,successes INTEGER NOT NULL DEFAULT 0);
@@ -251,22 +236,8 @@ func (a *App) Close() error {
 	a.client.public.CloseIdleConnections()
 	return a.db.Close()
 }
-func (a *App) encrypt(s string) (string, error) {
-	nonce := make([]byte, a.aead.NonceSize())
-	if _, err := rand.Read(nonce); err != nil {
-		return "", err
-	}
-	return base64.StdEncoding.EncodeToString(a.aead.Seal(nonce, nonce, []byte(s), nil)), nil
-}
-func (a *App) decrypt(s string) (string, error) {
-	b, err := base64.StdEncoding.DecodeString(s)
-	if err != nil || len(b) < a.aead.NonceSize() {
-		return "", errors.New("invalid encrypted key")
-	}
-	n := a.aead.NonceSize()
-	v, err := a.aead.Open(nil, b[:n], b[n:], nil)
-	return string(v), err
-}
+func (a *App) encrypt(s string) (string, error) { return a.cipher.Encrypt(s) }
+func (a *App) decrypt(s string) (string, error) { return a.cipher.Decrypt(s) }
 func (a *App) providers() ([]Provider, error) {
 	rows, err := a.db.Query(`SELECT id,name,kind,base_url,enabled,timeout_seconds,model,search_mode FROM providers ORDER BY CASE WHEN kind='xai' THEN 0 WHEN kind='grok-compatible' THEN 1 ELSE 2 END,id`)
 	if err != nil {
@@ -415,80 +386,23 @@ func (a *App) addKeys(provider string, input []KeyInput) ([]int64, error) {
 	return ids, nil
 }
 
-var errNoKey = errors.New("no available key (missing, disabled, cooling down or at concurrency limit)")
-
-func (a *App) acquire(provider string, exclude map[int64]bool) (Key, error) {
-	a.poolMu.Lock()
-	defer a.poolMu.Unlock()
-	if a.poolFault.Load() {
-		return Key{}, errStorage
-	}
-	keys, err := a.keys(provider)
-	if err != nil {
-		return Key{}, err
-	}
-	chosen := -1
-	total := 0.0
-	for i, k := range keys {
-		if !k.Enabled || k.CooldownUntil > time.Now().Unix() || exclude[k.ID] || a.flight[k.ID] >= k.MaxConcurrent {
-			continue
-		}
-		a.turns[k.ID] += float64(k.Weight)
-		total += float64(k.Weight)
-		if chosen < 0 || a.turns[k.ID] > a.turns[keys[chosen].ID] {
-			chosen = i
-		}
-	}
-	if chosen < 0 {
-		return Key{}, errNoKey
-	}
-	k := keys[chosen]
-	a.turns[k.ID] -= total
-	return a.reserveKey(k)
+// Repository writes are conditional on the leased revision. KeyPool owns
+// occupancy and policy; SQL remains centralized here with the schema.
+func (a *App) recordKeyUse(k Key) error {
+	_, err := a.db.Exec(`UPDATE api_keys SET uses=uses+1 WHERE id=? AND revision=?`, k.ID, k.revision)
+	return a.storageError("key_acquire", err)
 }
-
-// Caller holds poolMu from reading the credential snapshot through reservation.
-func (a *App) reserveKey(k Key) (Key, error) {
-	var err error
-	k.secret, err = a.decrypt(k.secret)
-	if err != nil {
-		return Key{}, err
-	}
-	a.flight[k.ID]++
-	_, err = a.db.Exec(`UPDATE api_keys SET uses=uses+1 WHERE id=? AND revision=?`, k.ID, k.revision)
-	if err != nil {
-		a.flight[k.ID]--
-		return Key{}, a.storageError("key_acquire", err)
-	}
-	k.lease = &keyLease{}
-	return k, nil
-}
-func (a *App) release(k Key, status int, cooldown int64, reason string) error {
-	a.poolMu.Lock()
-	defer a.poolMu.Unlock()
-	if k.lease == nil || k.lease.released {
-		return nil
-	}
-	k.lease.released = true
-	a.flight[k.ID]--
-	if a.flight[k.ID] == 0 {
-		delete(a.flight, k.ID)
-	}
+func (a *App) applyKeyOutcome(k Key, status int, cooldown int64, reason string) error {
 	var err error
 	if status >= 200 && status < 300 {
-		// Keep diagnostics while cooling down or disabled by another request.
 		_, err = a.db.Exec(`UPDATE api_keys SET successes=successes+1,last_error=CASE WHEN cooldown_until<=? AND enabled=1 THEN '' ELSE last_error END WHERE id=? AND revision=?`, time.Now().Unix(), k.ID, k.revision)
 	} else {
 		enabled := status != 401 && status != 403
-		// A shorter failure must not overwrite the longer cooldown's diagnosis.
 		_, err = a.db.Exec(`UPDATE api_keys SET enabled=CASE WHEN ? THEN enabled ELSE 0 END,last_error=CASE WHEN ? OR (enabled=1 AND ?>=cooldown_until) THEN ? ELSE last_error END,cooldown_until=MAX(cooldown_until,?) WHERE id=? AND revision=?`, enabled, !enabled, cooldown, reason, cooldown, k.ID, k.revision)
-	}
-	if err != nil {
-		// Unknown persisted state: fail closed until restart.
-		a.poolFault.Store(true)
 	}
 	return a.storageError("key_release", err)
 }
+
 func (a *App) record(operation, query string, ok bool, elapsed, count int, details any) {
 	b, _ := json.Marshal(details)
 	_, err := a.db.Exec(`INSERT INTO requests(created_at,operation,query,ok,elapsed_ms,result_count,details) VALUES(?,?,?,?,?,?,?)`, time.Now().UTC().Format(time.RFC3339), operation, query, ok, elapsed, count, string(b))
