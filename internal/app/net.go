@@ -22,7 +22,7 @@ func publicIP(ip net.IP) bool {
 	if ip == nil || !ip.IsGlobalUnicast() || ip.IsPrivate() || ip.IsLoopback() || ip.IsLinkLocalUnicast() || ip.IsLinkLocalMulticast() {
 		return false
 	}
-	for _, cidr := range []string{"0.0.0.0/8", "100.64.0.0/10", "192.0.0.0/24", "192.0.2.0/24", "198.18.0.0/15", "198.51.100.0/24", "203.0.113.0/24", "240.0.0.0/4", "2001:db8::/32", "64:ff9b::/96", "2002::/16"} {
+	for _, cidr := range []string{"0.0.0.0/8", "100.64.0.0/10", "192.0.0.0/24", "192.0.2.0/24", "198.18.0.0/15", "198.51.100.0/24", "203.0.113.0/24", "240.0.0.0/4", "192.88.99.0/24", "2001:db8::/32", "2001::/23", "64:ff9b::/96", "64:ff9b:1::/48", "100::/64", "100:0:0:1::/64", "2002::/16", "3fff::/20", "5f00::/16", "fec0::/10"} {
 		_, n, _ := net.ParseCIDR(cidr)
 		if n.Contains(ip) {
 			return false
@@ -37,12 +37,27 @@ func validURL(raw string) (*url.URL, error) {
 	}
 	return u, nil
 }
+
+// publicNetwork is per-client test injection, never a mutable global resolver.
+// Resolve once, validate the whole answer, then dial only validated IP literals.
+type publicNetwork struct {
+	lookup func(context.Context, string) ([]net.IPAddr, error)
+	dial   func(context.Context, string, string) (net.Conn, error)
+}
+
+func defaultPublicNetwork() publicNetwork {
+	d := &net.Dialer{Timeout: 8 * time.Second, KeepAlive: 30 * time.Second}
+	return publicNetwork{lookup: resolvePublic, dial: d.DialContext}
+}
 func publicDial(ctx context.Context, network, address string) (net.Conn, error) {
+	return defaultPublicNetwork().dialContext(ctx, network, address)
+}
+func (n publicNetwork) dialContext(ctx context.Context, network, address string) (net.Conn, error) {
 	host, port, err := net.SplitHostPort(address)
 	if err != nil {
 		return nil, err
 	}
-	ips, err := resolvePublic(ctx, host)
+	ips, err := n.lookup(ctx, host)
 	if err != nil {
 		return nil, errors.New("DNS lookup failed")
 	}
@@ -54,9 +69,8 @@ func publicDial(ctx context.Context, network, address string) (net.Conn, error) 
 			return nil, errors.New("private/reserved destinations are blocked")
 		}
 	}
-	d := net.Dialer{Timeout: 8 * time.Second, KeepAlive: 30 * time.Second}
 	for _, ip := range ips {
-		conn, e := d.DialContext(ctx, network, net.JoinHostPort(ip.IP.String(), port))
+		conn, e := n.dial(ctx, network, net.JoinHostPort(ip.IP.String(), port))
 		if e == nil {
 			return conn, nil
 		}
@@ -75,6 +89,14 @@ func resolvePublic(ctx context.Context, host string) ([]net.IPAddr, error) {
 	if endpoint == "" {
 		return net.DefaultResolver.LookupIPAddr(ctx, host)
 	}
+	return resolveDoH(ctx, host, endpoint, &http.Client{Timeout: 8 * time.Second})
+}
+
+type httpDoer interface {
+	Do(*http.Request) (*http.Response, error)
+}
+
+func resolveDoH(ctx context.Context, host, endpoint string, client httpDoer) ([]net.IPAddr, error) {
 	u, e := validURL(endpoint)
 	if e != nil || u.Scheme != "https" {
 		return nil, errors.New("invalid DoH configuration")
@@ -88,7 +110,6 @@ func resolvePublic(ctx context.Context, host string) ([]net.IPAddr, error) {
 		return nil, e
 	}
 	r.Header.Set("Accept", "application/dns-json")
-	client := &http.Client{Timeout: 8 * time.Second}
 	res, e := client.Do(r)
 	if e != nil {
 		return nil, errors.New("DoH request failed")
@@ -121,14 +142,15 @@ func resolvePublic(ctx context.Context, host string) ([]net.IPAddr, error) {
 	}
 	return ips, nil
 }
-func newHTTPClient() *httpClient {
+func newHTTPClient() *httpClient { return newHTTPClientWithNetwork(defaultPublicNetwork()) }
+func newHTTPClientWithNetwork(network publicNetwork) *httpClient {
 	base := http.DefaultTransport.(*http.Transport).Clone()
 	base.MaxIdleConnsPerHost = 8
 	base.ResponseHeaderTimeout = 75 * time.Second
 	up := &http.Client{Transport: base, Timeout: 80 * time.Second, CheckRedirect: func(req *http.Request, via []*http.Request) error { return http.ErrUseLastResponse }}
 	pub := base.Clone()
 	pub.Proxy = nil
-	pub.DialContext = publicDial
+	pub.DialContext = network.dialContext
 	reader := &http.Client{Transport: pub, Timeout: 20 * time.Second, CheckRedirect: func(req *http.Request, via []*http.Request) error {
 		if len(via) >= 5 {
 			return errors.New("too many redirects")

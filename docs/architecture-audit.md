@@ -165,6 +165,12 @@ update/recreate/ensure 共用 inspect 驱动的 plan：实际 volume/bind 挂载
 
 回归：[离线 orchestration mocks](../deploy/tests/wslc-mock.tests.ps1)在 Windows PowerShell 5.1 通过，包括自定义卷/绑定/Proxy/DoH、错误身份、备份/删除/启动/重启策略失败恢复、bind mount、未知配置拒绝、ensure 行为、DPAPI roundtrip。CI 增加 pwsh mock 执行和递归 parser。具体支持边界、恢复命令与未验证的 WSLC preview 参数见 [部署说明](../deploy/README.md)。**没有连接真实 WSLC，也没有进行真实卷恢复演练，不能算线上验证。**
 
+### 第六批：A7 已补齐本轮边界回归并验证
+
+引入每 client 的 resolver/dialer 与 DoH doer 注入点，不使用可变全局 hook；生产仍是 resolve → 整组验证 → 固定 IP 连接。新增保守拒绝的 IPv6/转换/文档/特殊用途网段（含 NAT64-local、discard、site-local、Teredo/ORCHID、6to4 等）；不宣称该手写策略是完整或永久有效的 IANA 注册表。
+
+回归：[DNS/DoH/重定向/IP 分类](../internal/app/net_boundary_test.go)、[IPv6 固定连接/重定向预算/可信 upstream 隔离](../internal/app/net_transport_test.go)。混合公网/私网解析在拨号前拒绝、单次解析固定连接与下一次解析 rebinding、redirect 到 IPv4/IPv6/域名私网、DoH 超限/非法响应/取消均离线测试。定向测试连续 10 次、全套 race、vet、build 通过。实际 upstream 仍允许管理员配置内网服务；未做外网渗透或运行环境出站防火墙验证。
+
 ## 推荐执行顺序
 
 1. 修 A1/A2：统一 Key lease/revision 和单调冷却，补并发回归。
