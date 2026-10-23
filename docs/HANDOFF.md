@@ -2,7 +2,7 @@
 
 ## 给接手会话的任务
 
-用户希望在新会话中继续修复本次架构审计的问题。初始交接记录上下文与实施计划。**当前 A1/A2/A3 已修复并通过本地验证；A4–A8 尚未修复**。请先复核当前工作区，再从 P1 开始，分批提交，不要同时进行大范围架构重写或线上迁移。
+用户希望在新会话中继续修复本次架构审计的问题。初始交接记录上下文与实施计划。**当前 P1 的 A1–A4 已修复并通过 WSL 本地验证；P2 的 A5–A8 尚未修复**。请先复核当前工作区，再按各批进度从剩余项开始，分批提交，不要同时进行大范围架构重写或线上迁移。
 
 先读：
 
@@ -70,7 +70,7 @@ Rename-Item -LiteralPath .\super-agent-search -NewName uni-agent-search
 
 验收：A1/A2 复现转成正常回归测试并通过；补充两种完成顺序、多次失败、reset/替换期间在途成功与失败、手动测试、删除后释放、并发限制与持久化测试；全套 race 通过。
 
-第一批进度：A1/A2 已修复并验证，参见审计报告“修复进度”和 `internal/app/key_lease_test.go`。revision additive migration 保留旧库数据；旧 lease 不污染新状态且可靠释放 ID 级占用。WSL 全套 race、vet、build 通过；未上线。后续从第二批开始。
+第一批进度：A1/A2 已修复并验证，参见审计报告“修复进度”和 `internal/app/key_lease_test.go`。revision additive migration 保留旧库数据；旧 lease 不污染新状态且可靠释放 ID 级占用。WSL 全套 race、vet、build 通过；未上线。以下保留第二批实施计划与验收历史。
 
 ### 第二批：A3，缓存配置代隔离（P1）
 
@@ -82,7 +82,7 @@ Rename-Item -LiteralPath .\super-agent-search -NewName uni-agent-search
 
 验收：A3 用例转成正常回归并通过；新增禁用 provider、修改 endpoint、清缓存与在途搜索交错的 API 级测试。固定 channel/barrier 控制顺序，避免靠 sleep。singleflight 可后续做，不是这一批的必要前置。
 
-第二批进度：A3 已修复并验证。provider 快照与 epoch 原子读取，命中/回填验证同代；API 级 barrier 测试覆盖 clear、endpoint 修改、禁用 provider。全套 race、vet、build 通过。后续从第三批开始。
+第二批进度：A3 已修复并验证。provider 快照与 epoch 原子读取，命中/回填验证同代；API 级 barrier 测试覆盖 clear、endpoint 修改、禁用 provider。全套 race、vet、build 通过。以下保留第三批实施计划与验收历史。
 
 ### 第三批：A4，真正等待优雅停机（P1）
 
@@ -93,6 +93,10 @@ Rename-Item -LiteralPath .\super-agent-search -NewName uni-agent-search
 建议：等待 shutdown 完成；确定排空超时后的取消/关闭策略，先结束请求再关闭 DB/transport。当前排空预算 10 秒小于搜索预算 90 秒，需明确产品取舍；仅增加一个 channel 等待不等于超时后请求已收尾。
 
 验收：真实子进程 SIGTERM 集成测试，覆盖正常排空、超时强制退出、无在途请求退出及监听启动失败；确认关闭顺序且不会挂死。测试放在 Linux/WSL/CI 执行，Windows 不支持的信号用明确的平台限制处理。不要只用 httptest 声称已验证进程行为。
+
+第三批进度：A4 已修复并验证。main 等待 10 秒排空，超时取消请求/关连接，再给 5 秒收尾预算；handler 结束后才关闭 transport/DB，无法收尾则非零退出且不抢关数据库。Linux 真实子进程测试覆盖 SIGTERM 正常排空、超时取消、空闲退出、监听失败和 DB 尾部日志。全套 race、vet、build 通过；Windows 信号行为与线上运行未验证。
+
+当前后续工作从 P2 开始。A1/A2 提交 `63132e9`，A3 提交 `8a03f24`；A4 提交以审计报告记载的标题定位。用户已授权验证后提交并推送，但没有授权部署。
 
 ### 后续 P2（不要与 P1 大包混改）
 

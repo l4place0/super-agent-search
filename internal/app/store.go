@@ -238,7 +238,13 @@ CREATE INDEX IF NOT EXISTS requests_created ON requests(created_at);
 	}
 	return a, nil
 }
-func (a *App) Close() error { return a.db.Close() }
+
+// Close must be called only after request handlers have finished.
+func (a *App) Close() error {
+	a.client.upstream.CloseIdleConnections()
+	a.client.public.CloseIdleConnections()
+	return a.db.Close()
+}
 func (a *App) encrypt(s string) (string, error) {
 	nonce := make([]byte, a.aead.NonceSize())
 	if _, err := rand.Read(nonce); err != nil {
