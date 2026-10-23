@@ -43,10 +43,13 @@ func TestSearchAndManualShareProviderOutcome(t *testing.T) {
 	for _, status := range []int{200, 400, 401, 403, 402, 429, 432, 433, 500} {
 		t.Run(fmt.Sprint(status), func(t *testing.T) {
 			states := []Key{}
+			// A shared absolute Retry-After isolates policy from time spent
+			// creating the second app under heavy ablation/race workloads.
+			retryAt := time.Now().Add(5 * time.Minute).UTC().Truncate(time.Second)
 			for _, manual := range []bool{false, true} {
 				a := testApp(t)
 				setupTavily(t, a, func(w http.ResponseWriter, r *http.Request) {
-					w.Header().Set("Retry-After", "60")
+					w.Header().Set("Retry-After", retryAt.Format(http.TimeFormat))
 					w.WriteHeader(status)
 					if status == 200 {
 						fmt.Fprint(w, validResult)
@@ -56,6 +59,7 @@ func TestSearchAndManualShareProviderOutcome(t *testing.T) {
 				if err != nil {
 					t.Fatal(err)
 				}
+				started := time.Now()
 				if manual {
 					if _, err := a.testKey(context.Background(), id); err != nil {
 						t.Fatal(err)
@@ -71,14 +75,25 @@ func TestSearchAndManualShareProviderOutcome(t *testing.T) {
 						}
 					}
 				}
-				states = append(states, onlyKey(t, a))
+				finished := time.Now()
+				key := onlyKey(t, a)
+				if status >= 500 {
+					if key.CooldownUntil < started.Add(10*time.Second).Unix() || key.CooldownUntil > finished.Add(10*time.Second).Unix() {
+						t.Fatal("transient cooldown is outside the request's classification window")
+					}
+				} else {
+					want := int64(0)
+					if status == 402 || status == 429 || status == 432 || status == 433 {
+						want = retryAt.Unix()
+					}
+					if key.CooldownUntil != want {
+						t.Fatalf("cooldown = %d, want %d", key.CooldownUntil, want)
+					}
+				}
+				states = append(states, key)
 			}
 			first, second := states[0], states[1]
-			delta := first.CooldownUntil - second.CooldownUntil
-			if delta < 0 {
-				delta = -delta
-			}
-			if first.Enabled != second.Enabled || first.LastError != second.LastError || first.Uses != second.Uses || first.Successes != second.Successes || delta > 1 {
+			if first.Enabled != second.Enabled || first.LastError != second.LastError || first.Uses != second.Uses || first.Successes != second.Successes {
 				t.Fatalf("divergent manual/search outcome: %+v / %+v", first, second)
 			}
 		})

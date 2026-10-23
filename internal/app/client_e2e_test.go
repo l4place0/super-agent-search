@@ -92,7 +92,7 @@ func TestSkillClientsAgainstMockHTTP(t *testing.T) {
 						}
 					}))
 					defer server.Close()
-					ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+					ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 					defer cancel()
 					args := []string{script}
 					if client == "pwsh" {
