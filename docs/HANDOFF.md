@@ -96,7 +96,7 @@ Rename-Item -LiteralPath .\super-agent-search -NewName uni-agent-search
 
 第三批进度：A4 已修复并验证。main 等待 10 秒排空，超时取消请求/关连接，再给 5 秒收尾预算；handler 结束后才关闭 transport/DB，无法收尾则非零退出且不抢关数据库。Linux 真实子进程测试覆盖 SIGTERM 正常排空、超时取消、空闲退出、监听失败和 DB 尾部日志。全套 race、vet、build 通过；Windows 信号行为与线上运行未验证。
 
-当前后续工作从 P2 开始。A1/A2 提交 `63132e9`，A3 提交 `8a03f24`；A4 提交以审计报告记载的标题定位。用户已授权验证后提交并推送，但没有授权部署。
+当前后续工作从 P2 开始。A1/A2 提交 `63132e9`，A3 提交 `8a03f24`；A4 提交 `edc4ef0`。三批已推送 `origin/main`，GitHub CI run `39949541164` 全部通过；没有部署。用户已授权验证后提交并推送，但没有授权部署。
 
 ### 后续 P2（不要与 P1 大包混改）
 
@@ -172,4 +172,4 @@ GIT_TERMINAL_PROMPT=0 git -c credential.helper= \
 
 ## 可直接粘贴到新会话的启动提示
 
-> 继续 uni-agent-search 的架构审计修复。请先读 docs/HANDOFF.md、docs/architecture-audit.md 和 docs/audit/repro_test.go.txt，确认目录改名与工作区状态。先做 A1/A2（Key 单调冷却及 revision/lease 隔离），再做 A3（缓存 epoch）和 A4（优雅停机）。每批先复现、补测试，再最小修复。保持单实例架构与现有 SAS_* / 数据卷兼容，不读出私有凭据、不调用付费 provider、不直接部署线上。完成后按问题编号报告验证结果和剩余项。
+> 继续 uni-agent-search 的架构审计修复。请先读 docs/HANDOFF.md 和 docs/architecture-audit.md 并核对工作区与提交历史。P1 的 A1–A4 已修复、测试并推送；后续按 P2 的 A5–A8 分批推进，不重复执行旧的故意失败复现步骤。保持单实例架构与现有 SAS_* / 数据卷兼容，不读出私有凭据、不调用付费 provider、不直接部署线上。完成后按问题编号报告验证结果和剩余项。

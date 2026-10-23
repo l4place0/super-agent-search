@@ -129,7 +129,7 @@ rm internal/app/audit_repro_test.go
 
 ### 第一批：A1/A2 已修复并验证
 
-修复提交标题：`Fix key cooldown monotonicity and revision-scoped leases`（可通过 Git 历史定位）。
+修复提交：[63132e9 — Fix key cooldown monotonicity and revision-scoped leases](https://github.com/l4place0/uni-agent-search/commit/63132e9)。
 
 - 冷却取最大值；并发成功不清除有效冷却，诊断保留至冷却结束后的成功或显式 reset。
 - Key 增加持久 revision；替换 secret、reset、启用状态切换提升 revision。仅编辑标签/权重/并发上限不提升。
@@ -141,15 +141,17 @@ rm internal/app/audit_repro_test.go
 
 ### 第二批：A3 已修复并验证
 
-修复提交标题：`Fence search cache with configuration epochs`。provider 快照和 epoch 在同一 cacheMu 临界区读取；缓存命中与回填均验证 epoch，网络请求不持锁。所有现有配置 mutation 的 invalidate 都会提升 epoch。
+修复提交：[8a03f24 — Fence search cache with configuration epochs](https://github.com/l4place0/uni-agent-search/commit/8a03f24)。provider 快照和 epoch 在同一 cacheMu 临界区读取；缓存命中与回填均验证 epoch，网络请求不持锁。所有现有配置 mutation 的 invalidate 都会提升 epoch。
 
 回归：[清缓存/改 endpoint/禁用 provider 与在途请求的 API 级交错测试](../internal/app/cache_epoch_test.go)，使用 channel barrier，无 sleep/外网。WSL 全套 race、vet、build、sh 语法和 diff 检查通过。新增测试回放到 `63132e9` 时 clear/endpoint/disable 三项全部按预期失败，确认回归测试能识别基线缺陷。
 
 ### 第三批：A4 已修复并验证
 
-修复提交标题：`Wait for graceful shutdown and join cancelled handlers`。main 同步等待 Shutdown；10 秒排空超时后取消 BaseContext、关闭连接，再等待最多 5 秒 handler 收尾。request gate 阻止关闭阶段晚进入的 handler 访问 App；正常/取消完成后才关闭闲置 HTTP transport 和数据库。若 5 秒内仍不能收尾，以非零状态强制退出，刻意不与未结束 handler 并发关闭数据库。
+修复提交：[edc4ef0 — Wait for graceful shutdown and join cancelled handlers](https://github.com/l4place0/uni-agent-search/commit/edc4ef0)。main 同步等待 Shutdown；10 秒排空超时后取消 BaseContext、关闭连接，再等待最多 5 秒 handler 收尾。request gate 阻止关闭阶段晚进入的 handler 访问 App；正常/取消完成后才关闭闲置 HTTP transport 和数据库。若 5 秒内仍不能收尾，以非零状态强制退出，刻意不与未结束 handler 并发关闭数据库。
 
 回归：[Linux 真实进程 SIGTERM 测试](../cmd/server/main_linux_test.go)覆盖无请求退出、正常排空、10 秒超时取消并退出、监听失败，并验证请求尾部日志已持久化。测试构建 race-enabled server；正常排空用例回放到 `8a03f24` 按预期失败（尾部日志缺失）。WSL Ubuntu 全套 race、vet、build、sh 语法和 diff 检查通过。进程信号测试仅 Linux；未验证 Windows 信号行为，未做线上演练。A5–A8 仍未处理。
+
+三批修复已推送 `origin/main`；[GitHub CI run 39949541164](https://github.com/l4place0/uni-agent-search/actions/runs/39949541164) 全部通过（含 race、vet、sh 与 PowerShell parser 检查）。未部署、未迁移线上数据。
 
 ## 推荐执行顺序
 
