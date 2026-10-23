@@ -159,6 +159,12 @@ rm internal/app/audit_repro_test.go
 
 回归：[observe_test.go](../internal/app/observe_test.go)，覆盖数据库故障、Key 写失败停调度、入口计数与缓存/抓取失败、panic 脱敏。WSL 全套 race、vet、build 通过。未部署。
 
+### 第五批：A6 已实现并通过离线验证，真实 WSLC 未验证
+
+update/recreate/ensure 共用 inspect 驱动的 plan：实际 volume/bind 挂载、发布地址、允许的环境（Proxy/DoH）、资源和重启策略保留；不支持的配置停机前拒绝。使用原挂载的完整备份，不再固定 `sas-data`。DPAPI 恢复计划与固定 image ID 支持多阶段失败恢复；恢复先清除目标残留再还原快照。健康验收比较容器内和宿主入口的 readyz 实例 ID/版本；ensure 健康失败不再自动重建。保留旧容器名，不混入自动改名。新增显式 restore 脚本，禁止外来容器身份被删除。
+
+回归：[离线 orchestration mocks](../deploy/tests/wslc-mock.tests.ps1)在 Windows PowerShell 5.1 通过，包括自定义卷/绑定/Proxy/DoH、错误身份、备份/删除/启动/重启策略失败恢复、bind mount、未知配置拒绝、ensure 行为、DPAPI roundtrip。CI 增加 pwsh mock 执行和递归 parser。具体支持边界、恢复命令与未验证的 WSLC preview 参数见 [部署说明](../deploy/README.md)。**没有连接真实 WSLC，也没有进行真实卷恢复演练，不能算线上验证。**
+
 ## 推荐执行顺序
 
 1. 修 A1/A2：统一 Key lease/revision 和单调冷却，补并发回归。

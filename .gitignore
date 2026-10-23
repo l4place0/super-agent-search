@@ -12,3 +12,4 @@ client-token.local
 *.key
 *.pem
 deploy/verification*.md
+recovery-*.clixml

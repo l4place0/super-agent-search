@@ -41,7 +41,9 @@ wslc --session your-wslc-session exec uni-agent-search cat /data/credentials.jso
 
 `admin_token` 登录面板；把 `client_token` 单独保存到客户端私有文件并设置 `SAS_TOKEN_FILE`。不要将凭据、数据库或 `master.key` 提交到 Git。备份完整 `sas-data` 数据卷以保留数据库和对应加密密钥。
 
-如果需要代理或 DoH，可在直接调用 `start-wslc.ps1`、`update-wslc.ps1`、`recreate-wslc.ps1` 时传入 `-ProxyURL` 和 `-DoHURL`，默认均为空。代理地址必须可从容器访问。正文读取仍校验目标为公开地址，阻止私网和保留地址。
+首次部署可向 `start-wslc.ps1` 传入 `-ProxyURL`、`-DoHURL` 和 `-DataVolume`。后续 update/recreate 从 Docker inspect 保留实际挂载、端口绑定、允许的环境配置（含 Proxy/DoH）、资源限制、标签与重启策略，不再接受会覆盖原设置的 Bind/Proxy/DoH 默认参数。代理地址必须可从容器访问；public fetch 仍禁用代理并校验公开地址。
+
+脚本不再创建包含 native 参数的 transcript，避免代理凭据落入日志。恢复计划的环境项使用 Windows 当前用户 DPAPI 加密的 SecureString，`.clixml` 只能在原机器/用户下读取。不要打印、提交或上传计划文件；备份数据卷仍含数据库与主密钥，必须按敏感数据管理。
 
 ## 升级与恢复
 
@@ -52,9 +54,23 @@ wslc --session your-wslc-session exec uni-agent-search cat /data/credentials.jso
   -Image 127.0.0.1:5000/uni-agent-search:0.2.4
 ```
 
-升级脚本先停止本服务，备份 `sas-data` 到带时间戳的新卷，再替换容器并检查健康接口。它不自动回滚；失败时保留旧镜像和数据备份。自定义端口或绑定地址时，同时传入 `-Bind` 和对应 `-HealthURL`。
+升级前 inspect 并验证实际配置，确认新镜像已在本地、备份卷未存在，保存 `recovery-*.clixml`。停止容器时给予 20 秒宽限期，将**实际 `/data` 挂载**（自定义 named volume 或 Linux bind mount）完整复制到新备份卷，再以固定 image ID 和原配置重建。
 
-容器使用 Docker `unless-stopped` 策略。WSLC 某些版本可能在 restart 后丢失宿主机端口转发；可通过 `recreate-wslc.ps1 -Session your-wslc-session` 保留数据卷并重新注册端口。`ensure-wslc.ps1` 先探测健康接口，再启动或重建容器；它可由用户自行注册为登录任务，不等同于无人登录的系统服务。
+健康验收同时读取目标容器内 `/readyz` 和 Windows 发布入口，比较实例 ID 与版本；只返回 HTTP 200 不算通过。默认从已保存的首个 Bind 派生 URL，特殊路由可传 `-HealthURL`。镜像必须包含新 `/readyz` 和 Alpine 的 wget/cp/sh 工具；旧镜像仅用于恢复，不可直接作为新健康协议的目标。
+
+任何失败都会尝试恢复旧配置与完整数据快照（清除新 WAL/SHM/残留文件后复制，不做合并），并保留备份。自动恢复失败时，停止客户端、检查容器身份，再由原 Windows 用户运行：
+
+```powershell
+.\restore-wslc.ps1 -PlanPath .\recovery-<id>.clixml -ConfirmRestore
+```
+
+**恢复会回到升级前快照，丢弃升级后的写入。** 身份变化时恢复脚本拒绝删除容器，需要人工调查。不要删除备份或原镜像；若 WSLC 自身损坏，先恢复 WSLC，再使用计划重试，不要反复运行 update。
+
+支持边界：单一可写 `/data` 挂载、bridge/default 网络、8080/tcp 发布、标准入口和用户、允许的环境项、Memory/NanoCPUs/重启策略。Compose 管理容器、额外挂载、自定义 DNS/权限/入口/CPU quota 等不支持的设置会在停机前拒绝，必须手动迁移，不能假定所有 Docker 配置均可透明重建。
+
+容器使用 Docker `unless-stopped` 策略。WSLC 某些版本可能在 restart 后丢失宿主机端口转发；可通过 `recreate-wslc.ps1 -Session your-wslc-session` 保留数据卷并重新注册端口。`ensure-wslc.ps1` inspect 验证本服务，只在容器已停止时启动原容器；健康/身份失败会报错，**不再自动重建**。确认转发丢失后才显式运行 recreate（同样备份并保真恢复）。它可由用户自行注册为登录任务，不等同于无人登录的系统服务。
+
+验证范围：`deploy/tests/wslc-mock.tests.ps1` 在 Windows PowerShell 5.1 和 CI pwsh 下离线测试实际卷/Bind/Proxy/DoH 保留、身份不符及多阶段失败恢复；parser 检查覆盖全部脚本。未连接真实 WSLC、未做真实卷恢复演练。WSLC preview 的 `--mount`、`--stop-timeout`、image ID 运行与 Docker inspect 形状需先在隔离测试会话验证，不能把 mock 通过当成线上部署成功。
 
 ```powershell
 wslc --session your-wslc-session list

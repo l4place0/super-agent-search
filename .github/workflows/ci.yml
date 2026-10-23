@@ -16,10 +16,13 @@ jobs:
       - run: go test -race ./...
       - run: go vet ./...
       - run: sh -n skills/uni-agent-search/scripts/uas.sh
+      - name: Offline WSLC orchestration tests
+        shell: pwsh
+        run: ./deploy/tests/wslc-mock.tests.ps1
       - name: Check PowerShell syntax
         shell: pwsh
         run: |
-          $files = @(Get-ChildItem deploy -Filter *.ps1) + @(Get-Item skills/uni-agent-search/scripts/uas.ps1)
+          $files = @(Get-ChildItem deploy -Recurse -Filter *.ps1) + @(Get-Item skills/uni-agent-search/scripts/uas.ps1)
           foreach ($file in $files) {
             $tokens = $null; $parseErrors = $null
             [System.Management.Automation.Language.Parser]::ParseFile($file.FullName, [ref]$tokens, [ref]$parseErrors) | Out-Null
