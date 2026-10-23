@@ -13,6 +13,7 @@
 - A6 update/recreate 现在保留实际配置和容器名，不再接受 Bind/Proxy/DoH 覆盖；ensure 不再因健康失败自动重建。恢复计划使用 Windows 当前用户 DPAPI，不能换机器/用户解密；恢复会丢弃升级后的写入。
 - A5 新增 `/readyz`；Key 状态写失败 fail closed，排除故障后需重启。`/healthz` 仍为 liveness。
 - A8 明确保留的耦合及后续方向见 [代码边界](code-boundaries.md)；完整浏览器 E2E、Windows 信号行为、外网渗透与出站防火墙仍未验证。
+- 新增模块已做离线单因素[消融实验](audit/ablation.md)：原回归检出 8/9 有害变异，等价负对照通过；发现 readiness 测试被 KeyPool fault 掩盖，已补充独立数据库故障回归。生产实现没有被消融或关闭。
 - 下文 P1/P2 计划保留为历史验收清单，不表示仍需从 A1 重做。最新状态和回归链接以审计报告“修复进度”为准。
 
 先读：

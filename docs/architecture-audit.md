@@ -191,6 +191,10 @@ update/recreate/ensure 共用 inspect 驱动的 plan：实际 volume/bind 挂载
 
 代码及收尾提交均已推送 `origin/main`。[CI run 39958270219](https://github.com/l4place0/uni-agent-search/actions/runs/39958270219) 全部通过，含 Linux/pwsh 的真实 CLI→mock HTTP 和 WSLC mock。首轮 run `39957987832` 的部署测试断言全部通过，但故意注入的 LASTEXITCODE=1 泄漏到 runner 导致步骤失败；`02b1c1c` 已隔离预期失败的退出状态，不改变部署运行逻辑。
 
+### 新增模块消融实验
+
+基线 `9dfb269` 的单因素离线实验覆盖 9 个有害变异与 1 个等价负对照，原回归检出 8/9。唯一存活项是移除 readiness 数据库探测：原测试的 KeyPool fault 掩盖了这一缺失。补充独立 closed-DB 探针后，原实现通过、变异失败；探针已成为常规回归。等价重复策略的负对照保持通过，不能把行为测试当作共享模块维护价值的证明。详见[实验报告](audit/ablation.md)及机器记录；这不是性能或完整安全评估，所有消融仅在临时副本进行。
+
 ## 推荐执行顺序
 
 1. 修 A1/A2：统一 Key lease/revision 和单调冷却，补并发回归。

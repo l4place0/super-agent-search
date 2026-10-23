@@ -1,0 +1,250 @@
+{
+  "revision": "9dfb2692f1e8824d31ccb4cad188af959f853e09",
+  "method": "single-factor offline regression ablation; not a performance benchmark",
+  "baseline": {
+    "observability": {
+      "exit_code": 0,
+      "passed_tests": [
+        "TestReadinessAndStorageFailure",
+        "TestKeyReadFailureIsNotAnUpstreamFailure",
+        "TestIngressAccountingIncludesCacheAndFetchFailures",
+        "TestPanicLogRedactsValuesAndHasRequestID"
+      ],
+      "failed_tests": [],
+      "seconds": 7.627
+    },
+    "network": {
+      "exit_code": 0,
+      "passed_tests": [
+        "TestPublicDNSValidatesEntireAnswerBeforeDial",
+        "TestPublicDNSPinningRebindingAndFallback",
+        "TestPublicIPv6IsDialledAsPinnedLiteral"
+      ],
+      "failed_tests": [],
+      "seconds": 3.755
+    },
+    "policy": {
+      "exit_code": 0,
+      "passed_tests": [
+        "TestKeyRotationCooldownAndPersistence",
+        "TestProviderOutcomePolicy",
+        "TestSearchAndManualShareProviderOutcome/200",
+        "TestSearchAndManualShareProviderOutcome/400",
+        "TestSearchAndManualShareProviderOutcome/401",
+        "TestSearchAndManualShareProviderOutcome/403",
+        "TestSearchAndManualShareProviderOutcome/402",
+        "TestSearchAndManualShareProviderOutcome/429",
+        "TestSearchAndManualShareProviderOutcome/432",
+        "TestSearchAndManualShareProviderOutcome/433",
+        "TestSearchAndManualShareProviderOutcome/500",
+        "TestSearchAndManualShareProviderOutcome"
+      ],
+      "failed_tests": [],
+      "seconds": 11.569
+    },
+    "deployment": {
+      "exit_code": 0,
+      "passed_tests": [],
+      "failed_tests": [],
+      "seconds": 2.91
+    }
+  },
+  "cases": [
+    {
+      "exit_code": 0,
+      "passed_tests": [
+        "TestReadinessAndStorageFailure",
+        "TestKeyReadFailureIsNotAnUpstreamFailure",
+        "TestIngressAccountingIncludesCacheAndFetchFailures",
+        "TestPanicLogRedactsValuesAndHasRequestID"
+      ],
+      "failed_tests": [],
+      "seconds": 8.229,
+      "name": "readiness_without_database_probe",
+      "suite": "observability",
+      "kind": "defense",
+      "outcome": "survived",
+      "with_closed_database_probe": {
+        "exit_code": 1,
+        "passed_tests": [
+          "TestReadinessAndStorageFailure",
+          "TestKeyReadFailureIsNotAnUpstreamFailure",
+          "TestIngressAccountingIncludesCacheAndFetchFailures",
+          "TestPanicLogRedactsValuesAndHasRequestID"
+        ],
+        "failed_tests": [
+          "TestReadinessReportsUnavailableDatabase"
+        ],
+        "seconds": 7.809
+      },
+      "unmodified_with_closed_database_probe": {
+        "exit_code": 0,
+        "passed_tests": [
+          "TestReadinessReportsUnavailableDatabase",
+          "TestReadinessAndStorageFailure",
+          "TestKeyReadFailureIsNotAnUpstreamFailure",
+          "TestIngressAccountingIncludesCacheAndFetchFailures",
+          "TestPanicLogRedactsValuesAndHasRequestID"
+        ],
+        "failed_tests": [],
+        "seconds": 9.085
+      }
+    },
+    {
+      "exit_code": 1,
+      "passed_tests": [
+        "TestReadinessAndStorageFailure",
+        "TestKeyReadFailureIsNotAnUpstreamFailure",
+        "TestPanicLogRedactsValuesAndHasRequestID"
+      ],
+      "failed_tests": [
+        "TestIngressAccountingIncludesCacheAndFetchFailures"
+      ],
+      "seconds": 7.275,
+      "name": "without_ingress_accounting",
+      "suite": "observability",
+      "kind": "defense",
+      "outcome": "detected"
+    },
+    {
+      "exit_code": 1,
+      "passed_tests": [
+        "TestKeyReadFailureIsNotAnUpstreamFailure",
+        "TestIngressAccountingIncludesCacheAndFetchFailures",
+        "TestPanicLogRedactsValuesAndHasRequestID"
+      ],
+      "failed_tests": [
+        "TestReadinessAndStorageFailure"
+      ],
+      "seconds": 7.095,
+      "name": "without_key_persistence_fail_closed",
+      "suite": "observability",
+      "kind": "defense",
+      "outcome": "detected"
+    },
+    {
+      "exit_code": 1,
+      "passed_tests": [
+        "TestReadinessAndStorageFailure",
+        "TestKeyReadFailureIsNotAnUpstreamFailure",
+        "TestIngressAccountingIncludesCacheAndFetchFailures"
+      ],
+      "failed_tests": [
+        "TestPanicLogRedactsValuesAndHasRequestID"
+      ],
+      "seconds": 6.243,
+      "name": "panic_value_in_logs",
+      "suite": "observability",
+      "kind": "defense",
+      "outcome": "detected"
+    },
+    {
+      "exit_code": 1,
+      "passed_tests": [],
+      "failed_tests": [],
+      "seconds": 2.098,
+      "name": "backup_default_instead_of_actual_mount",
+      "suite": "deployment",
+      "kind": "defense",
+      "outcome": "detected"
+    },
+    {
+      "exit_code": 1,
+      "passed_tests": [],
+      "failed_tests": [],
+      "seconds": 2.131,
+      "name": "health_without_instance_identity",
+      "suite": "deployment",
+      "kind": "defense",
+      "outcome": "detected"
+    },
+    {
+      "exit_code": 1,
+      "passed_tests": [
+        "TestPublicIPv6IsDialledAsPinnedLiteral"
+      ],
+      "failed_tests": [
+        "TestPublicDNSValidatesEntireAnswerBeforeDial",
+        "TestPublicDNSPinningRebindingAndFallback"
+      ],
+      "seconds": 5.161,
+      "name": "without_whole_dns_answer_validation",
+      "suite": "network",
+      "kind": "defense",
+      "outcome": "detected"
+    },
+    {
+      "exit_code": 1,
+      "passed_tests": [
+        "TestPublicDNSValidatesEntireAnswerBeforeDial"
+      ],
+      "failed_tests": [
+        "TestPublicDNSPinningRebindingAndFallback",
+        "TestPublicIPv6IsDialledAsPinnedLiteral"
+      ],
+      "seconds": 5.446,
+      "name": "redial_hostname_instead_of_pinned_ip",
+      "suite": "network",
+      "kind": "defense",
+      "outcome": "detected"
+    },
+    {
+      "exit_code": 1,
+      "passed_tests": [
+        "TestSearchAndManualShareProviderOutcome/200",
+        "TestSearchAndManualShareProviderOutcome/400",
+        "TestSearchAndManualShareProviderOutcome/401",
+        "TestSearchAndManualShareProviderOutcome/403",
+        "TestSearchAndManualShareProviderOutcome/402",
+        "TestSearchAndManualShareProviderOutcome/429",
+        "TestSearchAndManualShareProviderOutcome/432",
+        "TestSearchAndManualShareProviderOutcome/433",
+        "TestSearchAndManualShareProviderOutcome/500",
+        "TestSearchAndManualShareProviderOutcome"
+      ],
+      "failed_tests": [
+        "TestKeyRotationCooldownAndPersistence",
+        "TestProviderOutcomePolicy"
+      ],
+      "seconds": 12.771,
+      "name": "without_provider_key_rotation",
+      "suite": "policy",
+      "kind": "defense",
+      "outcome": "detected"
+    },
+    {
+      "exit_code": 0,
+      "passed_tests": [
+        "TestKeyRotationCooldownAndPersistence",
+        "TestProviderOutcomePolicy",
+        "TestSearchAndManualShareProviderOutcome/200",
+        "TestSearchAndManualShareProviderOutcome/400",
+        "TestSearchAndManualShareProviderOutcome/401",
+        "TestSearchAndManualShareProviderOutcome/403",
+        "TestSearchAndManualShareProviderOutcome/402",
+        "TestSearchAndManualShareProviderOutcome/429",
+        "TestSearchAndManualShareProviderOutcome/432",
+        "TestSearchAndManualShareProviderOutcome/433",
+        "TestSearchAndManualShareProviderOutcome/500",
+        "TestSearchAndManualShareProviderOutcome"
+      ],
+      "failed_tests": [],
+      "seconds": 13.9,
+      "name": "duplicate_equivalent_policy_negative_control",
+      "suite": "policy",
+      "kind": "negative_control",
+      "outcome": "survived"
+    }
+  ],
+  "summary": {
+    "defense_variants": 9,
+    "detected_by_original_suite": 8,
+    "surviving_defense_variants": [
+      "readiness_without_database_probe"
+    ],
+    "confirmed_by_added_isolation_probe": [
+      "readiness_without_database_probe"
+    ],
+    "equivalent_negative_control_passed": true
+  }
+}
