@@ -6,7 +6,9 @@
 
 ### 当前剩余事项与验收边界
 
-- 代码提交：A5 `9c3314e`，A6 `0f6e393`，A7 `7b89e41`，A8 `87e546a`，前端纯格式化 `da39317`。后续审查补丁以 Git 历史为准。
+- 代码提交：A5 `9c3314e`，A6 `0f6e393`，A7 `7b89e41`，A8 `87e546a`，前端纯格式化 `da39317`；错误传播/文档收尾 `0dd5e8e`，mock exit code 隔离 `02b1c1c`。均已推送 `origin/main`。
+- [GitHub CI run 39958270219](https://github.com/l4place0/uni-agent-search/actions/runs/39958270219) 全部通过，包含 Go/race、vet、真实 sh/pwsh CLI 对 mock HTTP、Node DOM 合约、pwsh 编排 mock、递归 PowerShell parser。Windows 5.1 mock 和 DPAPI roundtrip 亦在本机通过。
+- app statements 覆盖率 80.9%，credential 89.5%；diagnose 仍无命令级测试，不能声称实际诊断流程已验证。
 - 没有连接真实 WSLC，没有部署、停止服务或迁移线上数据。需要隔离会话验证 WSLC preview 对 mount、stop-timeout、image ID、inspect 格式的兼容，以及真实卷备份/恢复。
 - A6 update/recreate 现在保留实际配置和容器名，不再接受 Bind/Proxy/DoH 覆盖；ensure 不再因健康失败自动重建。恢复计划使用 Windows 当前用户 DPAPI，不能换机器/用户解密；恢复会丢弃升级后的写入。
 - A5 新增 `/readyz`；Key 状态写失败 fail closed，排除故障后需重启。`/healthz` 仍为 liveness。
@@ -105,7 +107,7 @@ Rename-Item -LiteralPath .\super-agent-search -NewName uni-agent-search
 
 第三批进度：A4 已修复并验证。main 等待 10 秒排空，超时取消请求/关连接，再给 5 秒收尾预算；handler 结束后才关闭 transport/DB，无法收尾则非零退出且不抢关数据库。Linux 真实子进程测试覆盖 SIGTERM 正常排空、超时取消、空闲退出、监听失败和 DB 尾部日志。全套 race、vet、build 通过；Windows 信号行为与线上运行未验证。
 
-当前后续工作从 P2 开始。A1/A2 提交 `63132e9`，A3 提交 `8a03f24`；A4 提交 `edc4ef0`。三批已推送 `origin/main`，GitHub CI run `39949541164` 全部通过；没有部署。用户已授权验证后提交并推送，但没有授权部署。
+P1 收尾时的记录（后续 P2 已按文首状态实施）：A1/A2 提交 `63132e9`，A3 提交 `8a03f24`；A4 提交 `edc4ef0`。三批已推送 `origin/main`，GitHub CI run `39949541164` 全部通过；没有部署。用户已授权验证后提交并推送，但没有授权部署。
 
 ### P2 原实施计划（历史清单，当前进度见文首与审计报告）
 

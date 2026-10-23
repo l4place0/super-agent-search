@@ -149,7 +149,7 @@ rm internal/app/audit_repro_test.go
 
 修复提交：[edc4ef0 — Wait for graceful shutdown and join cancelled handlers](https://github.com/l4place0/uni-agent-search/commit/edc4ef0)。main 同步等待 Shutdown；10 秒排空超时后取消 BaseContext、关闭连接，再等待最多 5 秒 handler 收尾。request gate 阻止关闭阶段晚进入的 handler 访问 App；正常/取消完成后才关闭闲置 HTTP transport 和数据库。若 5 秒内仍不能收尾，以非零状态强制退出，刻意不与未结束 handler 并发关闭数据库。
 
-回归：[Linux 真实进程 SIGTERM 测试](../cmd/server/main_linux_test.go)覆盖无请求退出、正常排空、10 秒超时取消并退出、监听失败，并验证请求尾部日志已持久化。测试构建 race-enabled server；正常排空用例回放到 `8a03f24` 按预期失败（尾部日志缺失）。WSL Ubuntu 全套 race、vet、build、sh 语法和 diff 检查通过。进程信号测试仅 Linux；未验证 Windows 信号行为，未做线上演练。A5–A8 仍未处理。
+回归：[Linux 真实进程 SIGTERM 测试](../cmd/server/main_linux_test.go)覆盖无请求退出、正常排空、10 秒超时取消并退出、监听失败，并验证请求尾部日志已持久化。测试构建 race-enabled server；正常排空用例回放到 `8a03f24` 按预期失败（尾部日志缺失）。WSL Ubuntu 全套 race、vet、build、sh 语法和 diff 检查通过。进程信号测试仅 Linux；未验证 Windows 信号行为，未做线上演练。下面继续记录 P2 实施情况。
 
 三批修复已推送 `origin/main`；[GitHub CI run 39949541164](https://github.com/l4place0/uni-agent-search/actions/runs/39949541164) 全部通过（含 race、vet、sh 与 PowerShell parser 检查）。未部署、未迁移线上数据。
 
@@ -183,11 +183,13 @@ update/recreate/ensure 共用 inspect 驱动的 plan：实际 volume/bind 挂载
 
 先统一 `provider_outcome.go` 的状态/冷却/轮换策略，消除搜索与指定 Key 测试重复分类；KeyPool 的锁/占用/游标/故障状态与 Repository SQL 分离。新增 `internal/credential`，server/diagnose 共用 AES-GCM 格式，旧密文兼容测试通过。不引入跨进程架构或形式化全量接口。
 
-[代码边界与保留耦合](code-boundaries.md)列出 Repository、KeyPool、ProviderAdapter、SearchService、PageFetcher/HTTP 当前职责及后续方向。新增搜索/手动状态一致性测试、真实 sh/pwsh → mock HTTP 客户端测试和 JS 离线 DOM/API 合约测试。前端纯格式化另行独立提交。WSL race、vet、build 通过；sh 客户端 mock 通过，宿主未安装 pwsh，PowerShell 7 HTTP 行为交由 CI 验证。完整浏览器 E2E 和进一步的 PageFetcher/配置层拆分未做，不能把设计建议当作全量架构重写完成。
+[代码边界与保留耦合](code-boundaries.md)列出 Repository、KeyPool、ProviderAdapter、SearchService、PageFetcher/HTTP 当前职责及后续方向。新增搜索/手动状态一致性测试、真实 sh/pwsh → mock HTTP 客户端测试和 JS 离线 DOM/API 合约测试。前端纯格式化另行独立提交。WSL race、vet、build 通过；sh 客户端 mock 本地通过，PowerShell 7 客户端实际 HTTP 测试已在 CI 通过（宿主未安装 pwsh）。完整浏览器 E2E 和进一步的 PageFetcher/配置层拆分未做，不能把设计建议当作全量架构重写完成。
 
 ### P2 收尾验证
 
 最终 WSL 全套 `go test -race -count=1 -cover ./...`、vet、server/diagnose build、sh 语法、Node DOM 合约、Windows PowerShell 5.1 mock/parser/DPAPI 均通过。app statements 80.9%，credential 89.5%；diagnose 仍无命令级测试，不能把共用 crypto 的测试算作实际诊断调用验证。Key repository 读取/写入错误通过 typed error 传播为 503，不混作上游故障。未调用真实 provider，未部署。
+
+代码及收尾提交均已推送 `origin/main`。[CI run 39958270219](https://github.com/l4place0/uni-agent-search/actions/runs/39958270219) 全部通过，含 Linux/pwsh 的真实 CLI→mock HTTP 和 WSLC mock。首轮 run `39957987832` 的部署测试断言全部通过，但故意注入的 LASTEXITCODE=1 泄漏到 runner 导致步骤失败；`02b1c1c` 已隔离预期失败的退出状态，不改变部署运行逻辑。
 
 ## 推荐执行顺序
 
