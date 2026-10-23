@@ -335,8 +335,46 @@ func (a *App) updateKey(w http.ResponseWriter, r *http.Request) {
 	// Reset/replacement and enabled transitions fence all previous leases.
 	// Label, weight and concurrency edits alone do not change credential state.
 	a.poolMu.Lock()
-	res, e := a.db.Exec(`UPDATE api_keys SET revision=revision+CASE WHEN ? OR enabled<>? THEN 1 ELSE 0 END,enabled=?,weight=?,max_concurrent=?,cooldown_until=CASE WHEN ? THEN 0 ELSE cooldown_until END,last_error=CASE WHEN ? THEN '' ELSE last_error END,label=COALESCE(?,label),secret=COALESCE(?,secret),masked=COALESCE(?,masked) WHERE id=?`, in.Reset, in.Enabled, in.Enabled, in.Weight, in.MaxConcurrent, in.Reset, in.Reset, in.Label, encrypted, masked, id)
-	a.poolMu.Unlock()
+	defer a.poolMu.Unlock()
+	tx, err := a.db.Begin()
+	if err != nil {
+		fail(w, 503, errStorage.Error())
+		return
+	}
+	defer tx.Rollback()
+	if encrypted != nil {
+		rows, err := tx.Query(`SELECT secret FROM api_keys WHERE provider_id=(SELECT provider_id FROM api_keys WHERE id=?) AND id<>?`, id, id)
+		if err != nil {
+			fail(w, 503, errStorage.Error())
+			return
+		}
+		duplicate := false
+		for rows.Next() {
+			var stored string
+			if err = rows.Scan(&stored); err != nil {
+				break
+			}
+			var plain string
+			plain, err = a.decrypt(stored)
+			if err != nil {
+				break
+			}
+			duplicate = duplicate || plain == strings.TrimSpace(in.Secret)
+		}
+		if err == nil {
+			err = rows.Err()
+		}
+		rows.Close()
+		if err != nil {
+			fail(w, 503, "cannot validate stored credentials")
+			return
+		}
+		if duplicate {
+			fail(w, 400, "key is duplicated in this provider")
+			return
+		}
+	}
+	res, e := tx.Exec(`UPDATE api_keys SET revision=revision+CASE WHEN ? OR enabled<>? THEN 1 ELSE 0 END,enabled=?,weight=?,max_concurrent=?,cooldown_until=CASE WHEN ? THEN 0 ELSE cooldown_until END,last_error=CASE WHEN ? THEN '' ELSE last_error END,label=COALESCE(?,label),secret=COALESCE(?,secret),masked=COALESCE(?,masked) WHERE id=?`, in.Reset, in.Enabled, in.Enabled, in.Weight, in.MaxConcurrent, in.Reset, in.Reset, in.Label, encrypted, masked, id)
 	if e != nil {
 		fail(w, 500, "database unavailable")
 		return
@@ -348,6 +386,10 @@ func (a *App) updateKey(w http.ResponseWriter, r *http.Request) {
 	}
 	if n == 0 {
 		fail(w, 404, "key not found")
+		return
+	}
+	if err := tx.Commit(); err != nil {
+		fail(w, 503, errStorage.Error())
 		return
 	}
 	a.invalidate()
@@ -509,7 +551,7 @@ func readHTML(raw string) (string, string) {
 				title = nodeText(n)
 				return
 			}
-			if attr(n, "hidden") != "" || attr(n, "aria-hidden") == "true" {
+			if hasAttr(n, "hidden") || attr(n, "aria-hidden") == "true" {
 				return
 			}
 		}
@@ -535,4 +577,13 @@ func readHTML(raw string) (string, string) {
 		}
 	}
 	return strings.Join(parts, "\n\n"), title
+}
+
+func hasAttr(n *html.Node, name string) bool {
+	for _, a := range n.Attr {
+		if a.Key == name {
+			return true
+		}
+	}
+	return false
 }

@@ -1,0 +1,1194 @@
+{
+  "revision": "6fd8ee29b179de9788b8112b401b6723a9ac5228",
+  "source": "tracked and nonignored untracked working tree snapshot, including uncommitted repairs",
+  "snapshot_sha256": {
+    ".dockerignore": "5325a60579c34c0fc5556a9e76fe28db58b955fedf9e3df06af82ed30ab2538b",
+    ".gitattributes": "b954686b65cbe53b04468005c4e4c9039552b1053b4941bf444a3ef89cdf6754",
+    ".github/workflows/ci.yml": "412a47f2d5c5acbcc06344658b654c8a75ba3d50e49e4ac5ca5bda09e8abe507",
+    ".gitignore": "d1bb0de2e26046f8b5f0c06bc00882524ddbefe82ed87cd75475c82e3f56812c",
+    "Dockerfile": "36241696b688c9de5d2ae2afe2b9fb4e8ee35fe55dedbf59b29858783f65a341",
+    "Dockerfile.prebuilt": "73eec04454f82464ba7b0d7d2b9a1391607ee5a8567746a75ed2f7d5d7f492f6",
+    "LICENSE": "a76669ab0b8bff12e8292beae433b2ed464fe19af5c42061b2f0c8b15128fdf2",
+    "README.md": "116eb9ef60a2cecfb071bc317b6d578b342872c0e7256417d1202fb16ba3c3b6",
+    "cmd/diagnose/main.go": "2b1910406fd1c601610a701df51d156b4c90c44de72f8653f156e2569f9f8665",
+    "cmd/server/main.go": "43f6a0cab03e40d5c82058fc447a4398da0d57c3f396ace153a63856f0f14dfb",
+    "cmd/server/main_linux_test.go": "dd94435ae9c148b6da8abf8c24cba3d0ebfc6fd2ca88703b39a01767b90d4811",
+    "cmd/server/main_test.go": "e27cc8dc6b97fde32eddd05d66732f93204cc5f2fd09ee582a6b1b4e09908050",
+    "compose.yaml": "f73ba9f010a33efcb9039f709129be7839a5411d3668f4918c9f31a8ee1f199a",
+    "deploy/README.md": "d89535ab232fca821f75aa9d8c854f56b128f6bf7d0d06498a1a2f998291ee02",
+    "deploy/deploy-wslc.ps1": "ee99698f2092c825a8af089ccbf8bf99421affbb209af8f022e75831e15654ab",
+    "deploy/ensure-wslc.ps1": "62a5a9d4d2997bd17432994abc0aac731f5db5df664aa40d4fbe2e3b99dda7e4",
+    "deploy/recreate-wslc.ps1": "fdd46569acf06b83f6c418c135c6311ecc2fc1119765898d649d1aca040b2743",
+    "deploy/restore-wslc.ps1": "fca0364bc4b0e872176d1059be8f4320bb3e48de83e04d3eae47a6b11c422440",
+    "deploy/start-wslc.ps1": "144cb55d3a01a57279ddddf5f2e4bebbfd55c991e5fc2d112e8a4e21f3168065",
+    "deploy/tests/recovery_shell_helper.py": "be85ea14a397533bfa400f8f67462d71e0ea1fdb4b4dfbf6f53603d005bb35d6",
+    "deploy/tests/wslc-mock.tests.ps1": "275db302d34686c69cfc4e6a8f2a9dcb3fcb5dd2c5fbd367666b0ea3f5117976",
+    "deploy/update-wslc.ps1": "54c36b6b9d85d43f9ebcaa7ebeae9a4b7bf4743f9048eaf5f7f22db32b9e9270",
+    "deploy/wslc-common.ps1": "cde98a229598c7cd926771cd4fc519e1258b7433b66e633d043ba016a38eb6c7",
+    "docs/HANDOFF.md": "a3cec18cf365da93aafc2f417b14a21d9c7e9ee07fdfa1879c99be332329a186",
+    "docs/architecture-audit.md": "97108ddc58b9dc093de0895e6c547f90d5c1ce7638c54dcf0d53de1774f3aea7",
+    "docs/audit/ablation-9dfb269.json": "1073486852fc447cc8b7499ae56539b9ebfc0ef40c081e45298de90ae3eae305",
+    "docs/audit/ablation-full-0b7ac35.json": "6634ed3969d21833c17ae1152f5c6197e26abad33446e843de9bf8041f804324",
+    "docs/audit/ablation-full-doh-followup.json": "77eeec512fd746526359bc8d745ed1e38a6e72c98a5635b743e38645f21beec2",
+    "docs/audit/ablation-full.md": "a86e683ed791d781f6d447bbd1c3a99febdccaf352b4af2cbd218cc3678f56c6",
+    "docs/audit/ablation.md": "d061c2c4ac28f9f4498c7a2bbaea35d76258f0ecc249fab5f4aff3af27368742",
+    "docs/audit/repro_test.go.txt": "649a55fe3bf05327fd69f8d756d52f7a5fb5540ae66771227c01ff58b545895b",
+    "docs/code-boundaries.md": "35f8171519fc75c90705cceb852e42779201f6798d0379fec9405d5054e47224",
+    "docs/rename-migration.md": "f9aaaebd175fffbc7eba3d2fc6c9294be49f5fecf885fda4e0751748c5fdcec7",
+    "go.mod": "851bde85f6a012f36c3a6c94df605d90205ccdce6d4ee952b2d69a054d4f3588",
+    "go.sum": "d7be501afade595594dcd39e4f83b782d26b937cb0981cc5851ddcd0ea6c17c6",
+    "internal/app/app_test.go": "ca6ea0e3bbbbbb0da7bf618d2ad57c696fb33eadfff9c4c5a4b199333c914771",
+    "internal/app/audit_repro_test.go": "4d913ca51d7d0e25de43d8c1835acb02715242b9c8ed7095032997ae2ac11c1e",
+    "internal/app/cache_epoch_test.go": "163548a6769b9e1164d872098cc307e174a8ec911358d7128026b46401f315af",
+    "internal/app/client_e2e_test.go": "ec2cd711302765a89f721b0688364903fedca41d7926d3de9b2444cf91650e52",
+    "internal/app/doh_limit_test.go": "d445b6292946d7b4d07bc8c465af53295376737e248a15f16868dd4ed1005ca3",
+    "internal/app/extended.go": "bb0589d6a9e5df7b9487ba3a6e60636034dbe3f0692b1aa54da4e585abbb9a21",
+    "internal/app/http.go": "177f9c718a643e017014302b2dc5a1b389040599ad19ff134619e0ada9ecc8c7",
+    "internal/app/key_lease_test.go": "037db04d2c09d252b24e398307a9e31da6ca3fa1cec3af3355e861c3b4ea0dc1",
+    "internal/app/key_pool.go": "dcb102382b54c3cf71527c4aa0f10d38fd6701d9fe155049b7ed26dac79a063d",
+    "internal/app/key_test_call.go": "5f4a75c7f1e4ed036de6cbb6b41be7be306bd83b42ccd7d486b1b172ab451a78",
+    "internal/app/net.go": "e1b1edec5109a3d74ed1a4e0909fcadac449942fced570827f54876cbbd42847",
+    "internal/app/net_boundary_test.go": "68a7c8f09081ace37a1bdcc864e3809ce6463655b5dad5f77f6282456540607b",
+    "internal/app/net_transport_test.go": "93e911e6cd211db09839f4d93672d6df90fe82787f1fa161585c913a9f79539e",
+    "internal/app/observe.go": "75faeb320fba7d73ed62c48685f177c76644863e59825e6e0571e1e7f7626e29",
+    "internal/app/observe_test.go": "dd78b507baca2eb0c3e48fcd9f6159e0e5bbd886c375422c2bb5165dc6445cbe",
+    "internal/app/provider_outcome.go": "434469618833254ea959e6aa87df62feffc0c18fb23eabe347cd87a3760b1819",
+    "internal/app/provider_outcome_test.go": "38ab4b06cc5deee7529c5985b065f8905f0d614e54318f5c6a4c70516f77fde4",
+    "internal/app/providers_test.go": "ca331c7d10774caa364c8cbeb57f5f38d58e3ab3440b5cd35b960b7cae12d5ee",
+    "internal/app/readiness_test.go": "ce7a37316c98dbd53e08df76c99401e0f9b81fe6274fd1c0eb216968b2a1a97e",
+    "internal/app/review_regression_test.go": "52c698954f223c5877c5522c7c0eaec4cd55aca4ec17c0d5e3ed91b13db4d76f",
+    "internal/app/search.go": "25937a72d27e5e06c2d802220093c48a11661d397f644eb0f5e4c69be388cfe0",
+    "internal/app/store.go": "02ef3e3f0f3a12d9b343fe3cf2e4bb2536df68729ca86007ea9b8b41ab6ecf6c",
+    "internal/app/web/app.js": "b36531d8721d1ed513c43adf178db2bc84ca739ad1f921834fec417c60281af3",
+    "internal/app/web/index.html": "dd905a92e0561c5685a29b3f14a5e32de2c8ced210272d6eedb1c2c022407620",
+    "internal/app/web/providers.js": "c67807b3953002c7ba85feee6ae38e76d2c0412d19a497e109c6f0ca533ddced",
+    "internal/app/web/style.css": "4775c47b0ad8f5bc230a980087f55ebade99be464057b81c3731cd18fe0f2844",
+    "internal/app/web_test/web.test.mjs": "9738d1d7f9edf25109e19210eee055dd5c0d46ee13bf8464c0f0107c92108cf6",
+    "internal/credential/cipher.go": "d06535979d282fa8f46bdef2a7020e0fa480c0e257073c4a4ca5731c0131e4f7",
+    "internal/credential/cipher_test.go": "6a838dc5181a864271b18d0c9f66c22bc33e0ace261f8f58238643e0def5eab9",
+    "scripts/ablate.py": "c877ce61c0e1a17d758c8e29bf2d944c958813e3dbf0a1fbf1f803ba53c03541",
+    "scripts/ablate_full.py": "6c729bcd35fea00264a283febdb06179664b027c344d87915852b78b6567c7fb",
+    "scripts/ablate_review_repairs.py": "b303576179e19c0170ca1e048128d09486921d54fb2042b71cedfcc9a3b780af",
+    "scripts/test_ablate_full.py": "f8a23c4f6faadff8234d6153d7efa6005cbf8074f7db2f52a60d6aaa20c848f4",
+    "skills/uni-agent-search/SKILL.md": "64f895ac0d3d1310deeda0899b73d892bb622a2efa02fb84b1e9dd750d46b0bb",
+    "skills/uni-agent-search/scripts/uas.ps1": "4cca4f24ca71ec686666f04404645a175a9193fa2114a04cead1f024c9fc93b1",
+    "skills/uni-agent-search/scripts/uas.sh": "6126ca7a28843218da9cbcfbe0bc3320ff2996700e82f2e6ab5ad7a69758a8a8"
+  },
+  "method": "all 2^3 repair combinations plus finite component ablations; each runs all offline suites; one repetition",
+  "workers": 2,
+  "environment": {
+    "go": "go version go1.22.2 linux/amd64",
+    "pwsh": "PowerShell 7.5.4"
+  },
+  "cases": [
+    {
+      "name": "baseline_before",
+      "removed": [],
+      "logs": [
+        "baseline_before-0.log",
+        "baseline_before-1.log",
+        "baseline_before-2.log",
+        "baseline_before-3.log",
+        "baseline_before-4.log",
+        "baseline_before-5.log",
+        "baseline_before-6.log"
+      ],
+      "mutated_sha256": {
+        "internal/app/http.go": "177f9c718a643e017014302b2dc5a1b389040599ad19ff134619e0ada9ecc8c7",
+        "deploy/wslc-common.ps1": "5fef70aae468d51ae094a4f9d84537e875b1bb90a1339c94c038e805d308e966"
+      },
+      "suites": {
+        "go_race_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 59.858,
+          "passed_count": 123,
+          "failed_tests": [],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 40.183
+        },
+        "linux_pwsh_mock": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 19.637
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.473,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.017
+        },
+        "go_vet": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 3.226
+        },
+        "python_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.402
+        }
+      },
+      "outcome": "survived",
+      "witnesses": []
+    },
+    {
+      "name": "without_restore",
+      "removed": [
+        "restore"
+      ],
+      "logs": [
+        "without_restore-0.log",
+        "without_restore-1.log",
+        "without_restore-2.log",
+        "without_restore-3.log",
+        "without_restore-4.log",
+        "without_restore-5.log",
+        "without_restore-6.log"
+      ],
+      "mutated_sha256": {
+        "internal/app/http.go": "177f9c718a643e017014302b2dc5a1b389040599ad19ff134619e0ada9ecc8c7",
+        "deploy/wslc-common.ps1": "9bbe75bef611546476d2c5c5d490dcb6b824eab45ef9d068ee3377a05211598b"
+      },
+      "suites": {
+        "go_race_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 67.685,
+          "passed_count": 123,
+          "failed_tests": [],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 3.561
+        },
+        "linux_pwsh_mock": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 8.698
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.623,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.006
+        },
+        "go_vet": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 4.515
+        },
+        "python_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.495
+        }
+      },
+      "outcome": "detected",
+      "witnesses": [
+        "Invalid backup accepted:"
+      ]
+    },
+    {
+      "name": "without_dedupe",
+      "removed": [
+        "dedupe"
+      ],
+      "logs": [
+        "without_dedupe-0.log",
+        "without_dedupe-1.log",
+        "without_dedupe-2.log",
+        "without_dedupe-3.log",
+        "without_dedupe-4.log",
+        "without_dedupe-5.log",
+        "without_dedupe-6.log"
+      ],
+      "mutated_sha256": {
+        "internal/app/http.go": "391464848139ae5509c9972e818b9baaa50a3b1ad1815bc75427102936e1a746",
+        "deploy/wslc-common.ps1": "5fef70aae468d51ae094a4f9d84537e875b1bb90a1339c94c038e805d308e966"
+      },
+      "suites": {
+        "go_race_all": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 65.805,
+          "passed_count": 122,
+          "failed_tests": [
+            "uni-agent-search/internal/app/TestReplacementCredentialUniqueness"
+          ],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 37.806
+        },
+        "linux_pwsh_mock": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 18.011
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.53,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.01
+        },
+        "go_vet": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 4.155
+        },
+        "python_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.627
+        }
+      },
+      "outcome": "detected",
+      "witnesses": [
+        "uni-agent-search/internal/app/TestReplacementCredentialUniqueness"
+      ]
+    },
+    {
+      "name": "without_hidden",
+      "removed": [
+        "hidden"
+      ],
+      "logs": [
+        "without_hidden-0.log",
+        "without_hidden-1.log",
+        "without_hidden-2.log",
+        "without_hidden-3.log",
+        "without_hidden-4.log",
+        "without_hidden-5.log",
+        "without_hidden-6.log"
+      ],
+      "mutated_sha256": {
+        "internal/app/http.go": "ba90dcf79d23dfb666e0800e5dd63d474998e99340b9d828ae04d79d1ffae4b0",
+        "deploy/wslc-common.ps1": "5fef70aae468d51ae094a4f9d84537e875b1bb90a1339c94c038e805d308e966"
+      },
+      "suites": {
+        "go_race_all": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 73.428,
+          "passed_count": 122,
+          "failed_tests": [
+            "uni-agent-search/internal/app/TestReadHTMLHiddenAttributes"
+          ],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 34.559
+        },
+        "linux_pwsh_mock": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 18.868
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.605,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.013
+        },
+        "go_vet": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 4.872
+        },
+        "python_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.826
+        }
+      },
+      "outcome": "detected",
+      "witnesses": [
+        "uni-agent-search/internal/app/TestReadHTMLHiddenAttributes"
+      ]
+    },
+    {
+      "name": "without_restore_dedupe",
+      "removed": [
+        "restore",
+        "dedupe"
+      ],
+      "logs": [
+        "without_restore_dedupe-0.log",
+        "without_restore_dedupe-1.log",
+        "without_restore_dedupe-2.log",
+        "without_restore_dedupe-3.log",
+        "without_restore_dedupe-4.log",
+        "without_restore_dedupe-5.log",
+        "without_restore_dedupe-6.log"
+      ],
+      "mutated_sha256": {
+        "internal/app/http.go": "391464848139ae5509c9972e818b9baaa50a3b1ad1815bc75427102936e1a746",
+        "deploy/wslc-common.ps1": "9bbe75bef611546476d2c5c5d490dcb6b824eab45ef9d068ee3377a05211598b"
+      },
+      "suites": {
+        "go_race_all": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 73.682,
+          "passed_count": 122,
+          "failed_tests": [
+            "uni-agent-search/internal/app/TestReplacementCredentialUniqueness"
+          ],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 3.013
+        },
+        "linux_pwsh_mock": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 9.353
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.643,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.037
+        },
+        "go_vet": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 4.691
+        },
+        "python_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.915
+        }
+      },
+      "outcome": "detected",
+      "witnesses": [
+        "Invalid backup accepted:",
+        "uni-agent-search/internal/app/TestReplacementCredentialUniqueness"
+      ]
+    },
+    {
+      "name": "without_restore_hidden",
+      "removed": [
+        "restore",
+        "hidden"
+      ],
+      "logs": [
+        "without_restore_hidden-0.log",
+        "without_restore_hidden-1.log",
+        "without_restore_hidden-2.log",
+        "without_restore_hidden-3.log",
+        "without_restore_hidden-4.log",
+        "without_restore_hidden-5.log",
+        "without_restore_hidden-6.log"
+      ],
+      "mutated_sha256": {
+        "internal/app/http.go": "ba90dcf79d23dfb666e0800e5dd63d474998e99340b9d828ae04d79d1ffae4b0",
+        "deploy/wslc-common.ps1": "9bbe75bef611546476d2c5c5d490dcb6b824eab45ef9d068ee3377a05211598b"
+      },
+      "suites": {
+        "go_race_all": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 71.725,
+          "passed_count": 122,
+          "failed_tests": [
+            "uni-agent-search/internal/app/TestReadHTMLHiddenAttributes"
+          ],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 3.599
+        },
+        "linux_pwsh_mock": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 7.718
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.476,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.055
+        },
+        "go_vet": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 3.779
+        },
+        "python_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.779
+        }
+      },
+      "outcome": "detected",
+      "witnesses": [
+        "Invalid backup accepted:",
+        "uni-agent-search/internal/app/TestReadHTMLHiddenAttributes"
+      ]
+    },
+    {
+      "name": "without_dedupe_hidden",
+      "removed": [
+        "dedupe",
+        "hidden"
+      ],
+      "logs": [
+        "without_dedupe_hidden-0.log",
+        "without_dedupe_hidden-1.log",
+        "without_dedupe_hidden-2.log",
+        "without_dedupe_hidden-3.log",
+        "without_dedupe_hidden-4.log",
+        "without_dedupe_hidden-5.log",
+        "without_dedupe_hidden-6.log"
+      ],
+      "mutated_sha256": {
+        "internal/app/http.go": "d101f14d6a898460b18a9bab8ce9cbbbe7aa566a4a061948db27226443b51bb8",
+        "deploy/wslc-common.ps1": "5fef70aae468d51ae094a4f9d84537e875b1bb90a1339c94c038e805d308e966"
+      },
+      "suites": {
+        "go_race_all": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 72.258,
+          "passed_count": 121,
+          "failed_tests": [
+            "uni-agent-search/internal/app/TestReadHTMLHiddenAttributes",
+            "uni-agent-search/internal/app/TestReplacementCredentialUniqueness"
+          ],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 32.061
+        },
+        "linux_pwsh_mock": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 15.633
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.48,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.011
+        },
+        "go_vet": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 4.252
+        },
+        "python_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.535
+        }
+      },
+      "outcome": "detected",
+      "witnesses": [
+        "uni-agent-search/internal/app/TestReadHTMLHiddenAttributes",
+        "uni-agent-search/internal/app/TestReplacementCredentialUniqueness"
+      ]
+    },
+    {
+      "name": "without_restore_dedupe_hidden",
+      "removed": [
+        "restore",
+        "dedupe",
+        "hidden"
+      ],
+      "logs": [
+        "without_restore_dedupe_hidden-0.log",
+        "without_restore_dedupe_hidden-1.log",
+        "without_restore_dedupe_hidden-2.log",
+        "without_restore_dedupe_hidden-3.log",
+        "without_restore_dedupe_hidden-4.log",
+        "without_restore_dedupe_hidden-5.log",
+        "without_restore_dedupe_hidden-6.log"
+      ],
+      "mutated_sha256": {
+        "internal/app/http.go": "d101f14d6a898460b18a9bab8ce9cbbbe7aa566a4a061948db27226443b51bb8",
+        "deploy/wslc-common.ps1": "9bbe75bef611546476d2c5c5d490dcb6b824eab45ef9d068ee3377a05211598b"
+      },
+      "suites": {
+        "go_race_all": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 66.955,
+          "passed_count": 121,
+          "failed_tests": [
+            "uni-agent-search/internal/app/TestReadHTMLHiddenAttributes",
+            "uni-agent-search/internal/app/TestReplacementCredentialUniqueness"
+          ],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 3.236
+        },
+        "linux_pwsh_mock": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 8.066
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.734,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.038
+        },
+        "go_vet": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 5.136
+        },
+        "python_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.667
+        }
+      },
+      "outcome": "detected",
+      "witnesses": [
+        "Invalid backup accepted:",
+        "uni-agent-search/internal/app/TestReadHTMLHiddenAttributes",
+        "uni-agent-search/internal/app/TestReplacementCredentialUniqueness"
+      ]
+    },
+    {
+      "name": "without_inspect",
+      "removed": [
+        "inspect"
+      ],
+      "logs": [
+        "without_inspect-0.log",
+        "without_inspect-1.log",
+        "without_inspect-2.log",
+        "without_inspect-3.log",
+        "without_inspect-4.log",
+        "without_inspect-5.log",
+        "without_inspect-6.log"
+      ],
+      "mutated_sha256": {
+        "internal/app/http.go": "177f9c718a643e017014302b2dc5a1b389040599ad19ff134619e0ada9ecc8c7",
+        "deploy/wslc-common.ps1": "f861c26ffeb112f3a5745bb286cde2882dc36b0a584f17a17b4b26ca9b2318af"
+      },
+      "suites": {
+        "go_race_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 65.983,
+          "passed_count": 123,
+          "failed_tests": [],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 2.897
+        },
+        "linux_pwsh_mock": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 15.972
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 2.386,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.043
+        },
+        "go_vet": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 11.469
+        },
+        "python_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 2.386
+        }
+      },
+      "outcome": "detected",
+      "witnesses": [
+        "Invalid backup accepted:"
+      ]
+    },
+    {
+      "name": "without_volume_identity",
+      "removed": [
+        "volume_identity"
+      ],
+      "logs": [
+        "without_volume_identity-0.log",
+        "without_volume_identity-1.log",
+        "without_volume_identity-2.log",
+        "without_volume_identity-3.log",
+        "without_volume_identity-4.log",
+        "without_volume_identity-5.log",
+        "without_volume_identity-6.log"
+      ],
+      "mutated_sha256": {
+        "internal/app/http.go": "177f9c718a643e017014302b2dc5a1b389040599ad19ff134619e0ada9ecc8c7",
+        "deploy/wslc-common.ps1": "2b73b0e75b8be63621686583077bb846e87f28ecbb551466c5d43aa4808b59f9"
+      },
+      "suites": {
+        "go_race_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 96.23,
+          "passed_count": 123,
+          "failed_tests": [],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 4.166
+        },
+        "linux_pwsh_mock": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 6.92
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.518,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.005
+        },
+        "go_vet": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 4.169
+        },
+        "python_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.393
+        }
+      },
+      "outcome": "detected",
+      "witnesses": [
+        "Invalid backup accepted:"
+      ]
+    },
+    {
+      "name": "without_preflight",
+      "removed": [
+        "preflight"
+      ],
+      "logs": [
+        "without_preflight-0.log",
+        "without_preflight-1.log",
+        "without_preflight-2.log",
+        "without_preflight-3.log",
+        "without_preflight-4.log",
+        "without_preflight-5.log",
+        "without_preflight-6.log"
+      ],
+      "mutated_sha256": {
+        "internal/app/http.go": "177f9c718a643e017014302b2dc5a1b389040599ad19ff134619e0ada9ecc8c7",
+        "deploy/wslc-common.ps1": "39e81a95121eab26f7dcf7a16b3687a60248c6b0101cd4be79a7100f7973a024"
+      },
+      "suites": {
+        "go_race_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 69.709,
+          "passed_count": 123,
+          "failed_tests": [],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 2.933
+        },
+        "linux_pwsh_mock": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 7.201
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.597,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.014
+        },
+        "go_vet": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 4.051
+        },
+        "python_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.46
+        }
+      },
+      "outcome": "detected",
+      "witnesses": [
+        "Invalid backup touched current deployment"
+      ]
+    },
+    {
+      "name": "without_recheck",
+      "removed": [
+        "recheck"
+      ],
+      "logs": [
+        "without_recheck-0.log",
+        "without_recheck-1.log",
+        "without_recheck-2.log",
+        "without_recheck-3.log",
+        "without_recheck-4.log",
+        "without_recheck-5.log",
+        "without_recheck-6.log"
+      ],
+      "mutated_sha256": {
+        "internal/app/http.go": "177f9c718a643e017014302b2dc5a1b389040599ad19ff134619e0ada9ecc8c7",
+        "deploy/wslc-common.ps1": "6cd77da3381cb623d7f9d7d5fa3ced7cf48622f98afea36c0954d648a7c4412e"
+      },
+      "suites": {
+        "go_race_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 62.079,
+          "passed_count": 123,
+          "failed_tests": [],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 17.09
+        },
+        "linux_pwsh_mock": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 12.79
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.669,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.022
+        },
+        "go_vet": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 4.414
+        },
+        "python_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.447
+        }
+      },
+      "outcome": "detected",
+      "witnesses": [
+        "Invalid backup accepted:"
+      ]
+    },
+    {
+      "name": "without_file_db",
+      "removed": [
+        "file_db"
+      ],
+      "logs": [
+        "without_file_db-0.log",
+        "without_file_db-1.log",
+        "without_file_db-2.log",
+        "without_file_db-3.log",
+        "without_file_db-4.log",
+        "without_file_db-5.log",
+        "without_file_db-6.log"
+      ],
+      "mutated_sha256": {
+        "internal/app/http.go": "177f9c718a643e017014302b2dc5a1b389040599ad19ff134619e0ada9ecc8c7",
+        "deploy/wslc-common.ps1": "cabedcaa8633e6bb7a29ed2089f8dc834d07e1e06742bf5c699791da97b008ff"
+      },
+      "suites": {
+        "go_race_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 64.455,
+          "passed_count": 123,
+          "failed_tests": [],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 2.872
+        },
+        "linux_pwsh_mock": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 7.393
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.774,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.006
+        },
+        "go_vet": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 3.849
+        },
+        "python_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.587
+        }
+      },
+      "outcome": "detected",
+      "witnesses": [
+        "Invalid backup accepted:"
+      ]
+    },
+    {
+      "name": "without_file_master",
+      "removed": [
+        "file_master"
+      ],
+      "logs": [
+        "without_file_master-0.log",
+        "without_file_master-1.log",
+        "without_file_master-2.log",
+        "without_file_master-3.log",
+        "without_file_master-4.log",
+        "without_file_master-5.log",
+        "without_file_master-6.log"
+      ],
+      "mutated_sha256": {
+        "internal/app/http.go": "177f9c718a643e017014302b2dc5a1b389040599ad19ff134619e0ada9ecc8c7",
+        "deploy/wslc-common.ps1": "93c67d4699d746b1894bae8f2aa9268f310a13861a76afe62612ebc073e26f44"
+      },
+      "suites": {
+        "go_race_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 67.405,
+          "passed_count": 123,
+          "failed_tests": [],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 9.165
+        },
+        "linux_pwsh_mock": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 8.058
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.597,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.019
+        },
+        "go_vet": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 3.755
+        },
+        "python_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.676
+        }
+      },
+      "outcome": "detected",
+      "witnesses": [
+        "Invalid backup accepted:"
+      ]
+    },
+    {
+      "name": "without_file_credentials",
+      "removed": [
+        "file_credentials"
+      ],
+      "logs": [
+        "without_file_credentials-0.log",
+        "without_file_credentials-1.log",
+        "without_file_credentials-2.log",
+        "without_file_credentials-3.log",
+        "without_file_credentials-4.log",
+        "without_file_credentials-5.log",
+        "without_file_credentials-6.log"
+      ],
+      "mutated_sha256": {
+        "internal/app/http.go": "177f9c718a643e017014302b2dc5a1b389040599ad19ff134619e0ada9ecc8c7",
+        "deploy/wslc-common.ps1": "cfbce7cd0b568b222ed893a1defb229e2a657ffd12ff936d63d5080f23313416"
+      },
+      "suites": {
+        "go_race_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 68.473,
+          "passed_count": 123,
+          "failed_tests": [],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 11.361
+        },
+        "linux_pwsh_mock": {
+          "status": "assertion_failure",
+          "exit_code": 1,
+          "seconds": 11.767
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.545,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.03
+        },
+        "go_vet": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 4.624
+        },
+        "python_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.679
+        }
+      },
+      "outcome": "detected",
+      "witnesses": [
+        "Invalid backup accepted:"
+      ]
+    },
+    {
+      "name": "negative_control",
+      "removed": [
+        "negative_control"
+      ],
+      "logs": [
+        "negative_control-0.log",
+        "negative_control-1.log",
+        "negative_control-2.log",
+        "negative_control-3.log",
+        "negative_control-4.log",
+        "negative_control-5.log",
+        "negative_control-6.log"
+      ],
+      "mutated_sha256": {
+        "internal/app/http.go": "aa2e9c9990c367dd4a37972427b37c219151d02a77dcc080bf4dee65222ce481",
+        "deploy/wslc-common.ps1": "5fef70aae468d51ae094a4f9d84537e875b1bb90a1339c94c038e805d308e966"
+      },
+      "suites": {
+        "go_race_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 60.644,
+          "passed_count": 123,
+          "failed_tests": [],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 35.098
+        },
+        "linux_pwsh_mock": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 12.419
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.426,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.013
+        },
+        "go_vet": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 3.769
+        },
+        "python_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.563
+        }
+      },
+      "outcome": "survived",
+      "witnesses": []
+    },
+    {
+      "name": "baseline_after",
+      "removed": [],
+      "logs": [
+        "baseline_after-0.log",
+        "baseline_after-1.log",
+        "baseline_after-2.log",
+        "baseline_after-3.log",
+        "baseline_after-4.log",
+        "baseline_after-5.log",
+        "baseline_after-6.log"
+      ],
+      "mutated_sha256": {
+        "internal/app/http.go": "177f9c718a643e017014302b2dc5a1b389040599ad19ff134619e0ada9ecc8c7",
+        "deploy/wslc-common.ps1": "5fef70aae468d51ae094a4f9d84537e875b1bb90a1339c94c038e805d308e966"
+      },
+      "suites": {
+        "go_race_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 51.961,
+          "passed_count": 123,
+          "failed_tests": [],
+          "skipped_tests": []
+        },
+        "windows_ps51_mock_dpapi": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 32.9
+        },
+        "linux_pwsh_mock": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 10.612
+        },
+        "node_dom_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.354,
+          "failed_tests": []
+        },
+        "sh_syntax": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.01
+        },
+        "go_vet": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 3.214
+        },
+        "python_all": {
+          "status": "pass",
+          "exit_code": 0,
+          "seconds": 0.47
+        }
+      },
+      "outcome": "survived",
+      "witnesses": []
+    }
+  ],
+  "summary": {
+    "survived": 3,
+    "detected": 14,
+    "invalid_or_incomplete": 0,
+    "unwitnessed_failure": 0,
+    "surviving_harmful_variants": []
+  }
+}

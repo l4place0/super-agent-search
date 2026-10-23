@@ -64,13 +64,15 @@ wslc --session your-wslc-session exec uni-agent-search cat /data/credentials.jso
 .\restore-wslc.ps1 -PlanPath .\recovery-<id>.clixml -ConfirmRestore
 ```
 
+恢复在停止/删除当前容器前检查备份卷存在，并检查 `search.db`、`master.key`、`credentials.json` 非空；清空目标数据前再次检查这些文件。检查失败时拒绝恢复。此检查不替代备份完整性验证或实际恢复演练。
+
 **恢复会回到升级前快照，丢弃升级后的写入。** 身份变化时恢复脚本拒绝删除容器，需要人工调查。不要删除备份或原镜像；若 WSLC 自身损坏，先恢复 WSLC，再使用计划重试，不要反复运行 update。
 
 支持边界：单一可写 `/data` 挂载、bridge/default 网络、8080/tcp 发布、标准入口和用户、允许的环境项、Memory/NanoCPUs/重启策略。Compose 管理容器、额外挂载、自定义 DNS/权限/入口/CPU quota 等不支持的设置会在停机前拒绝，必须手动迁移，不能假定所有 Docker 配置均可透明重建。
 
 容器使用 Docker `unless-stopped` 策略。WSLC 某些版本可能在 restart 后丢失宿主机端口转发；可通过 `recreate-wslc.ps1 -Session your-wslc-session` 保留数据卷并重新注册端口。`ensure-wslc.ps1` inspect 验证本服务，只在容器已停止时启动原容器；健康/身份失败会报错，**不再自动重建**。确认转发丢失后才显式运行 recreate（同样备份并保真恢复）。它可由用户自行注册为登录任务，不等同于无人登录的系统服务。
 
-验证范围：`deploy/tests/wslc-mock.tests.ps1` 在 Windows PowerShell 5.1 和 CI pwsh 下离线测试实际卷/Bind/Proxy/DoH 保留、身份不符及多阶段失败恢复；parser 检查覆盖全部脚本。未连接真实 WSLC、未做真实卷恢复演练。WSLC preview 的 `--mount`、`--stop-timeout`、image ID 运行与 Docker inspect 形状需先在隔离测试会话验证，不能把 mock 通过当成线上部署成功。
+验证范围：`deploy/tests/wslc-mock.tests.ps1` 在 Windows PowerShell 5.1 和 CI pwsh 下离线测试实际卷/Bind/Proxy/DoH 保留、身份不符及多阶段失败恢复；parser 检查覆盖全部脚本。新增用例覆盖备份 inspect 空/多条/错误身份，以及三个必需文件缺失或为空的早期/晚期失败。恢复 shell 命令在临时目录中的实际文件上执行，要求 Python 3 和 sh；不会调用 Docker 或访问真实数据卷。未连接真实 WSLC、未做真实卷恢复演练。WSLC preview 的 `--mount`、`--stop-timeout`、image ID 运行与 Docker inspect 形状需先在隔离测试会话验证，不能把 mock 通过当成线上部署成功。
 
 ```powershell
 wslc --session your-wslc-session list

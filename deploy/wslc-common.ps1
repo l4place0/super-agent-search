@@ -151,6 +151,12 @@ function Restore-UasPlan {
     if ($Plan.Running) { Invoke-UasWSLC $Plan.Session @('start',$Plan.Name) | Out-Null }
     return
   }
+  # Docker creates missing named volumes even for read-only mounts.
+  # Validate the snapshot before stopping/removing the current container.
+  $backupVolume = @(Invoke-UasDocker $Plan.Session @('volume','inspect',$Plan.Backup) | ConvertFrom-Json)
+  if ($backupVolume.Count -ne 1 -or $backupVolume[0].Name -ne $Plan.Backup) { throw 'Recovery refused: backup volume unavailable' }
+  $validate = 'test -s /backup/search.db && test -s /backup/master.key && test -s /backup/credentials.json'
+  Invoke-UasDocker $Plan.Session @('run','--rm','--user','0:0','--entrypoint','/bin/sh','--mount',"type=volume,source=$($Plan.Backup),target=/backup,readonly",$Plan.Image,'-c',$validate) | Out-Null
   # A failed run/update can leave a partial container. Never remove a foreign ID.
   $existing = @(Invoke-UasDocker $Plan.Session @('ps','-a','--filter',"name=^/$($Plan.Name)$",'--format','{{.ID}}'))
   if ($existing.Count -gt 0) {
@@ -160,7 +166,7 @@ function Restore-UasPlan {
     Invoke-UasWSLC $Plan.Session @('remove',$Plan.Name) | Out-Null
   }
   # Restore the complete snapshot, not a merge that retains WAL/SHM/new files.
-  $restore = 'find /target -mindepth 1 -maxdepth 1 -exec rm -rf -- {} + && cp -a /backup/. /target/'
+  $restore = $validate + ' && find /target -mindepth 1 -maxdepth 1 -exec rm -rf -- {} + && cp -a /backup/. /target/'
   Invoke-UasDocker $Plan.Session @('run','--rm','--user','0:0','--entrypoint','/bin/sh','--mount',"type=volume,source=$($Plan.Backup),target=/backup,readonly",'--mount',(Get-UasMount $Plan '/target'),$Plan.Image,'-c',$restore) | Out-Null
   Start-UasPlan $Plan
   if (-not $Plan.Running) { Invoke-UasDocker $Plan.Session @('stop','--time','20',$Plan.Name) | Out-Null }

@@ -26,7 +26,33 @@ function Invoke-UasWSLC {
     switch ($docker[0]) {
       'inspect' { return ($script:current | ConvertTo-Json -Depth 12 -Compress) }
       'image' { return '{"Id":"sha256:new"}' }
-      'volume' { if ($docker[1] -eq 'ls') { return }; return 'backup' }
+       'volume' {
+        if ($docker[1] -eq 'ls') { return }
+        if ($docker[1] -eq 'inspect') {
+          switch ($script:backupReply) {
+            'empty' { return '[]' }
+            'multiple' { return '[{"Name":"backup-test"},{"Name":"other"}]' }
+            'wrong' { return '{"Name":"other"}' }
+          }
+          return ('{"Name":"'+$docker[2]+'"}')
+        }
+        return 'backup'
+      }
+      'run' {
+        if ($script:recoveryScenario -and $docker -contains '/bin/sh') {
+          $stage = if ($docker -match 'target=/target(,|$)') { 'restore' } else { 'preflight' }
+          $encoded = [Convert]::ToBase64String([Text.Encoding]::UTF8.GetBytes($docker[-1]))
+          $helper = Join-Path $PSScriptRoot 'recovery_shell_helper.py'
+          $python = if (Get-Command python3 -ErrorAction SilentlyContinue) { 'python3' } else { 'python' }
+          $raw = & $python $helper --scenario $script:recoveryScenario --stage $stage --script $encoded
+          if ($LASTEXITCODE -ne 0) { throw 'Recovery sandbox runner failed' }
+          $result = $raw | ConvertFrom-Json
+          $script:sandboxStages += $stage
+          if (-not $result.target_preserved) { $script:dataChanged=$true }
+          if ($result.restored) { $script:snapshotRestored=$true }
+          if ($result.exit_code -ne 0) { throw 'Recovery fixture validation failed' }
+        }
+      }
       'ps' { if ($script:exists) { return $script:current.Id }; return }
       'exec' { return '{"status":"ready","version":"0.2.4","instance_id":"inside"}' }
     }
@@ -50,6 +76,7 @@ function Read-UasHealth { param([string]$URL)
 function Reset-Test {
   $script:current=$fixture | ConvertFrom-Json
   $script:calls.Clear(); $script:exists=$true; $script:healthy=$true; $script:failAt=''
+  $script:backupReply='valid';$script:recoveryScenario='';$script:dataChanged=$false;$script:snapshotRestored=$false;$script:sandboxStages=@()
 }
 Reset-Test
 $plan=Get-UasPlan 'mock-session' 'uni-agent-search'
@@ -84,8 +111,55 @@ foreach ($failure in @('volume create','/bin/cp','remove','run --pull','update -
   Assert $failed "Injected failure ignored: $failure"
   Assert ($script:current.Image -eq 'sha256:old') "Original image not recovered: $failure"
 }
+foreach ($failure in @('volume inspect','test -s /backup/search.db')) {
+  Reset-Test
+  $plan=Get-UasPlan 'mock-session' 'uni-agent-search';$script:transaction=$plan.TransactionID
+  $plan.Replaced=$true;$plan.Backup='backup-test'
+  $script:calls.Clear();$script:failAt=$failure
+  $failed=$false;try { Restore-UasPlan $plan } catch { $failed=$true }
+  Assert $failed "Invalid backup accepted: $failure"
+  $operations=@($script:calls | ForEach-Object { $_ -join ' ' })
+  Assert (-not ($operations -match '^(remove|system session run docker stop)|find /target')) 'Invalid backup touched current deployment'
+}
+# Check inspect responses as data, not just a simulated native exit error.
+foreach ($reply in @('empty','multiple','wrong')) {
+  Reset-Test
+  $plan=Get-UasPlan 'mock-session' 'uni-agent-search';$script:transaction=$plan.TransactionID
+  $plan.Replaced=$true;$plan.Backup='backup-test';$script:backupReply=$reply
+  $script:calls.Clear()
+  $failed=$false;try { Restore-UasPlan $plan } catch { $failed=$true }
+  Assert $failed "Invalid backup accepted: inspect response $reply"
+  $operations=@($script:calls | ForEach-Object { $_ -join ' ' })
+  Assert (-not ($operations -match '^(remove|system session run docker stop)|--entrypoint /bin/sh')) 'Invalid backup touched current deployment'
+}
+# Run the production shell command against disposable real files. Early cases
+# must leave the current container intact; late cases must preserve its data.
+foreach ($timing in @('early','late')) {
+  foreach ($state in @('missing','empty')) {
+    foreach ($file in @('search.db','master.key','credentials.json')) {
+      Reset-Test
+      $plan=Get-UasPlan 'mock-session' 'uni-agent-search';$script:transaction=$plan.TransactionID
+      $plan.Replaced=$true;$plan.Backup='backup-test'
+      $script:recoveryScenario="${timing}:${state}:$file";$script:calls.Clear()
+      $failed=$false;try { Restore-UasPlan $plan } catch { $failed=$true }
+      Assert $failed "Invalid backup accepted: $($script:recoveryScenario)"
+      Assert (-not $script:dataChanged) 'Invalid backup touched current deployment'
+      if ($timing -eq 'early') {
+        $operations=@($script:calls | ForEach-Object { $_ -join ' ' })
+        Assert (-not ($operations -match '^(remove|system session run docker stop)')) 'Invalid backup touched current deployment'
+      } else {
+        Assert ($script:sandboxStages -contains 'preflight' -and $script:sandboxStages -contains 'restore') 'Late fixture did not exercise both validation stages'
+      }
+    }
+  }
+}
 Reset-Test
-$script:current.Mounts[0].Type='bind';$script:current.Mounts[0].Source='/srv/my-search'
+$plan=Get-UasPlan 'mock-session' 'uni-agent-search';$script:transaction=$plan.TransactionID
+$plan.Replaced=$true;$plan.Backup='backup-test';$script:recoveryScenario='valid'
+Restore-UasPlan $plan
+Assert ($script:snapshotRestored -and $script:dataChanged) 'Valid fixture did not replace data with complete snapshot'
+Reset-Test
+$script:current.Mounts[0].Type='bind' ;$script:current.Mounts[0].Source='/srv/my-search'
 $plan=Get-UasPlan 'mock-session' 'uni-agent-search'
 Assert ((Get-UasMount $plan) -eq 'type=bind,source=/srv/my-search,target=/data') 'Bind mount lost'
 Reset-Test
