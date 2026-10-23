@@ -46,6 +46,14 @@ type Key struct {
 	Successes     int64  `json:"successes"`
 	InFlight      int    `json:"in_flight"`
 	secret        string
+	revision      int64
+	lease         *keyLease
+}
+
+// A lease is shared by Key copies and consumed under poolMu exactly once.
+// Occupancy is per ID across revisions; credential state is revision-scoped.
+type keyLease struct {
+	released bool
 }
 type App struct {
 	DataDir     string
@@ -181,6 +189,36 @@ CREATE INDEX IF NOT EXISTS requests_created ON requests(created_at);
 			}
 		}
 	}
+	// Close rows before ALTER: SQLite deliberately uses a single connection.
+	columns, err = db.Query(`PRAGMA table_info(api_keys)`)
+	if err != nil {
+		db.Close()
+		return nil, err
+	}
+	hasRevision := false
+	for columns.Next() {
+		var id, notnull, pk int
+		var name, kind string
+		var def any
+		if err = columns.Scan(&id, &name, &kind, &notnull, &def, &pk); err != nil {
+			columns.Close()
+			db.Close()
+			return nil, err
+		}
+		hasRevision = hasRevision || name == "revision"
+	}
+	err = columns.Err()
+	columns.Close()
+	if err != nil {
+		db.Close()
+		return nil, err
+	}
+	if !hasRevision {
+		if _, err = db.Exec(`ALTER TABLE api_keys ADD COLUMN revision INTEGER NOT NULL DEFAULT 1`); err != nil {
+			db.Close()
+			return nil, err
+		}
+	}
 	defaults := []Provider{
 		{ID: "bing", Name: "Bing RSS", Kind: "bing", BaseURL: "https://www.bing.com/search", Enabled: true, Timeout: 12},
 		{ID: "duckduckgo", Name: "DuckDuckGo", Kind: "duckduckgo", BaseURL: "https://html.duckduckgo.com/html/", Enabled: true, Timeout: 12},
@@ -233,7 +271,7 @@ func (a *App) providers() ([]Provider, error) {
 	return out, rows.Err()
 }
 func (a *App) keys(provider string) ([]Key, error) {
-	q := `SELECT id,provider_id,label,secret,masked,enabled,weight,max_concurrent,cooldown_until,last_error,uses,successes FROM api_keys`
+	q := `SELECT id,provider_id,label,secret,masked,enabled,weight,max_concurrent,cooldown_until,last_error,uses,successes,revision FROM api_keys`
 	args := []any{}
 	if provider != "" {
 		q += " WHERE provider_id=?"
@@ -248,7 +286,7 @@ func (a *App) keys(provider string) ([]Key, error) {
 	out := []Key{}
 	for rows.Next() {
 		var k Key
-		if err = rows.Scan(&k.ID, &k.ProviderID, &k.Label, &k.secret, &k.Masked, &k.Enabled, &k.Weight, &k.MaxConcurrent, &k.CooldownUntil, &k.LastError, &k.Uses, &k.Successes); err != nil {
+		if err = rows.Scan(&k.ID, &k.ProviderID, &k.Label, &k.secret, &k.Masked, &k.Enabled, &k.Weight, &k.MaxConcurrent, &k.CooldownUntil, &k.LastError, &k.Uses, &k.Successes, &k.revision); err != nil {
 			return nil, err
 		}
 		out = append(out, k)
@@ -387,6 +425,12 @@ func (a *App) acquire(provider string, exclude map[int64]bool) (Key, error) {
 	}
 	k := keys[chosen]
 	a.turns[k.ID] -= total
+	return a.reserveKey(k)
+}
+
+// Caller holds poolMu from reading the credential snapshot through reservation.
+func (a *App) reserveKey(k Key) (Key, error) {
+	var err error
 	k.secret, err = a.decrypt(k.secret)
 	if err != nil {
 		return Key{}, err
@@ -397,20 +441,27 @@ func (a *App) acquire(provider string, exclude map[int64]bool) (Key, error) {
 		a.flight[k.ID]--
 		return Key{}, err
 	}
+	k.lease = &keyLease{}
 	return k, nil
 }
 func (a *App) release(k Key, status int, cooldown int64, reason string) {
 	a.poolMu.Lock()
 	defer a.poolMu.Unlock()
+	if k.lease == nil || k.lease.released {
+		return
+	}
+	k.lease.released = true
 	a.flight[k.ID]--
+	if a.flight[k.ID] == 0 {
+		delete(a.flight, k.ID)
+	}
 	if status >= 200 && status < 300 {
-		_, _ = a.db.Exec(`UPDATE api_keys SET successes=successes+1,last_error='',cooldown_until=0 WHERE id=?`, k.ID)
+		// Keep diagnostics while cooling down or disabled by another request.
+		_, _ = a.db.Exec(`UPDATE api_keys SET successes=successes+1,last_error=CASE WHEN cooldown_until<=? AND enabled=1 THEN '' ELSE last_error END WHERE id=? AND revision=?`, time.Now().Unix(), k.ID, k.revision)
 	} else {
-		enabled := true
-		if status == 401 || status == 403 {
-			enabled = false
-		}
-		_, _ = a.db.Exec(`UPDATE api_keys SET enabled=CASE WHEN ? THEN enabled ELSE 0 END,cooldown_until=?,last_error=? WHERE id=?`, enabled, cooldown, reason, k.ID)
+		enabled := status != 401 && status != 403
+		// A shorter failure must not overwrite the longer cooldown's diagnosis.
+		_, _ = a.db.Exec(`UPDATE api_keys SET enabled=CASE WHEN ? THEN enabled ELSE 0 END,last_error=CASE WHEN ? OR (enabled=1 AND ?>=cooldown_until) THEN ? ELSE last_error END,cooldown_until=MAX(cooldown_until,?) WHERE id=? AND revision=?`, enabled, !enabled, cooldown, reason, cooldown, k.ID, k.revision)
 	}
 }
 func (a *App) record(operation, query string, ok bool, elapsed, count int, details any) {

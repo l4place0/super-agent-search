@@ -8,10 +8,12 @@ import (
 
 // A manual test targets exactly the selected key, including disabled/cooling
 // keys. It never enables the key or changes provider configuration implicitly.
-func (a *App) testKey(ctx context.Context, id int64) (Attempt, error) {
+func (a *App) acquireTestKey(id int64) (Key, Provider, error) {
+	a.poolMu.Lock()
+	defer a.poolMu.Unlock()
 	all, e := a.keys("")
 	if e != nil {
-		return Attempt{}, e
+		return Key{}, Provider{}, e
 	}
 	var k Key
 	found := false
@@ -23,11 +25,11 @@ func (a *App) testKey(ctx context.Context, id int64) (Attempt, error) {
 		}
 	}
 	if !found {
-		return Attempt{}, errors.New("key not found")
+		return Key{}, Provider{}, errors.New("key not found")
 	}
 	ps, e := a.providers()
 	if e != nil {
-		return Attempt{}, e
+		return Key{}, Provider{}, e
 	}
 	var provider Provider
 	for _, p := range ps {
@@ -37,25 +39,20 @@ func (a *App) testKey(ctx context.Context, id int64) (Attempt, error) {
 		}
 	}
 	if provider.ID == "" {
-		return Attempt{}, errors.New("provider not found")
+		return Key{}, Provider{}, errors.New("provider not found")
 	}
-	k.secret, e = a.decrypt(k.secret)
-	if e != nil {
-		return Attempt{}, errors.New("key decryption failed")
-	}
-	a.poolMu.Lock()
 	if a.flight[id] >= k.MaxConcurrent {
-		a.poolMu.Unlock()
-		return Attempt{}, errors.New("key is at its concurrency limit")
+		return Key{}, Provider{}, errors.New("key is at its concurrency limit")
 	}
-	a.flight[id]++
-	_, e = a.db.Exec(`UPDATE api_keys SET uses=uses+1 WHERE id=?`, id)
+	k, e = a.reserveKey(k)
+	return k, provider, e
+}
+
+func (a *App) testKey(ctx context.Context, id int64) (Attempt, error) {
+	k, provider, e := a.acquireTestKey(id)
 	if e != nil {
-		a.flight[id]--
-		a.poolMu.Unlock()
 		return Attempt{}, e
 	}
-	a.poolMu.Unlock()
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(provider.Timeout)*time.Second)
 	defer cancel()
 	start := time.Now()

@@ -125,6 +125,20 @@ rm internal/app/audit_repro_test.go
 
 后续修复后应把这些用例转成常规 `.go` 回归测试，并补充 handler/API 层并发变更用例。Race detector 通过不代表没有业务状态竞态。
 
+## 修复进度
+
+### 第一批：A1/A2 已修复并验证
+
+修复提交标题：`Fix key cooldown monotonicity and revision-scoped leases`（可通过 Git 历史定位）。
+
+- 冷却取最大值；并发成功不清除有效冷却，诊断保留至冷却结束后的成功或显式 reset。
+- Key 增加持久 revision；替换 secret、reset、启用状态切换提升 revision。仅编辑标签/权重/并发上限不提升。
+- 旧 lease 只释放 ID 级占用，不再修改新 revision 的计数、启用、冷却或错误。重复释放无效。
+- 手动测试与搜索共享 reservation/release 规则；旧 revision 仍计入同一 ID 并发上限。
+- 旧库通过 additive migration 增加 revision，保留原凭据和状态；无需数据重建。
+
+回归：[A1/A2 原始复现](../internal/app/audit_repro_test.go)、[完成顺序/管理变更/手动测试/迁移重启](../internal/app/key_lease_test.go)。WSL Ubuntu 下全套 `go test -race -count=1 ./...`、`go vet ./...`、server build、sh 语法和 diff 检查通过。未访问真实 provider，未部署线上。上面的发现描述保留审计基线历史；A3–A8 尚未处理。
+
 ## 推荐执行顺序
 
 1. 修 A1/A2：统一 Key lease/revision 和单调冷却，补并发回归。

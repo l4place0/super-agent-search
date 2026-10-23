@@ -314,7 +314,11 @@ func (a *App) updateKey(w http.ResponseWriter, r *http.Request) {
 		masked = &mask
 		in.Reset = true
 	}
-	res, e := a.db.Exec(`UPDATE api_keys SET enabled=?,weight=?,max_concurrent=?,cooldown_until=CASE WHEN ? THEN 0 ELSE cooldown_until END,last_error=CASE WHEN ? THEN '' ELSE last_error END,label=COALESCE(?,label),secret=COALESCE(?,secret),masked=COALESCE(?,masked) WHERE id=?`, in.Enabled, in.Weight, in.MaxConcurrent, in.Reset, in.Reset, in.Label, encrypted, masked, id)
+	// Reset/replacement and enabled transitions fence all previous leases.
+	// Label, weight and concurrency edits alone do not change credential state.
+	a.poolMu.Lock()
+	res, e := a.db.Exec(`UPDATE api_keys SET revision=revision+CASE WHEN ? OR enabled<>? THEN 1 ELSE 0 END,enabled=?,weight=?,max_concurrent=?,cooldown_until=CASE WHEN ? THEN 0 ELSE cooldown_until END,last_error=CASE WHEN ? THEN '' ELSE last_error END,label=COALESCE(?,label),secret=COALESCE(?,secret),masked=COALESCE(?,masked) WHERE id=?`, in.Reset, in.Enabled, in.Enabled, in.Weight, in.MaxConcurrent, in.Reset, in.Reset, in.Label, encrypted, masked, id)
+	a.poolMu.Unlock()
 	if e != nil {
 		fail(w, 500, "database unavailable")
 		return
