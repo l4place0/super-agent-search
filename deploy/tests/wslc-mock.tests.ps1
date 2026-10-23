@@ -133,4 +133,7 @@ $failed=$false
 try { & $nativeInvoker 'mock-session' @('run','-e','HTTP_PROXY=fake-secret') | Out-Null }
 catch { $failed=$true; Assert (-not $_.Exception.Message.Contains('private-native')) 'Native error was not redacted' }
 Assert $failed 'Native exit failure was ignored'
+# GitHub's pwsh runner propagates LASTEXITCODE after the script. The injected
+# native failure was expected and asserted; do not leak its exit code outward.
+$global:LASTEXITCODE=0
 Write-Output 'WSLC mock tests passed (no live operations).'
