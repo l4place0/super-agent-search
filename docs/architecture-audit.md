@@ -137,7 +137,13 @@ rm internal/app/audit_repro_test.go
 - 手动测试与搜索共享 reservation/release 规则；旧 revision 仍计入同一 ID 并发上限。
 - 旧库通过 additive migration 增加 revision，保留原凭据和状态；无需数据重建。
 
-回归：[A1/A2 原始复现](../internal/app/audit_repro_test.go)、[完成顺序/管理变更/手动测试/迁移重启](../internal/app/key_lease_test.go)。WSL Ubuntu 下全套 `go test -race -count=1 ./...`、`go vet ./...`、server build、sh 语法和 diff 检查通过。未访问真实 provider，未部署线上。上面的发现描述保留审计基线历史；A3–A8 尚未处理。
+回归：[A1/A2 原始复现](../internal/app/audit_repro_test.go)、[完成顺序/管理变更/手动测试/迁移重启](../internal/app/key_lease_test.go)。WSL Ubuntu 下全套 `go test -race -count=1 ./...`、`go vet ./...`、server build、sh 语法和 diff 检查通过。未访问真实 provider，未部署线上。上面的发现描述保留审计基线历史。
+
+### 第二批：A3 已修复并验证
+
+修复提交标题：`Fence search cache with configuration epochs`。provider 快照和 epoch 在同一 cacheMu 临界区读取；缓存命中与回填均验证 epoch，网络请求不持锁。所有现有配置 mutation 的 invalidate 都会提升 epoch。
+
+回归：[清缓存/改 endpoint/禁用 provider 与在途请求的 API 级交错测试](../internal/app/cache_epoch_test.go)，使用 channel barrier，无 sleep/外网。WSL 全套 race、vet、build、sh 语法和 diff 检查通过。A4–A8 尚未处理。
 
 ## 推荐执行顺序
 

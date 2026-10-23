@@ -489,7 +489,12 @@ func (a *App) search(ctx context.Context, in SearchInput) (SearchOutput, error) 
 	if len(in.IncludeDomains) > 20 || len(in.ExcludeDomains) > 20 {
 		return SearchOutput{}, errors.New("at most 20 domains per filter")
 	}
+	// Snapshot providers and epoch under the same lock as invalidation. Never
+	// hold it over network calls; an old snapshot may only use its old epoch.
+	a.cacheMu.Lock()
 	providers, err := a.providers()
+	epoch := a.cacheEpoch
+	a.cacheMu.Unlock()
 	if err != nil {
 		return SearchOutput{}, err
 	}
@@ -517,6 +522,7 @@ func (a *App) search(ctx context.Context, in SearchInput) (SearchOutput, error) 
 	if !in.NoCache {
 		a.cacheMu.Lock()
 		entry, ok := a.cache[cacheKey]
+		ok = ok && epoch == a.cacheEpoch
 		a.cacheMu.Unlock()
 		if ok && time.Now().Before(entry.expires) {
 			out := entry.value
@@ -554,10 +560,12 @@ func (a *App) search(ctx context.Context, in SearchInput) (SearchOutput, error) 
 			ttl = 30 * time.Second
 		}
 		a.cacheMu.Lock()
-		if len(a.cache) >= 200 {
-			a.cache = map[string]cacheEntry{}
+		if epoch == a.cacheEpoch {
+			if len(a.cache) >= 200 {
+				a.cache = map[string]cacheEntry{}
+			}
+			a.cache[cacheKey] = cacheEntry{out, time.Now().Add(ttl)}
 		}
-		a.cache[cacheKey] = cacheEntry{out, time.Now().Add(ttl)}
 		a.cacheMu.Unlock()
 	}
 	a.record("search", in.Query, len(out.Results) > 0, int(out.Elapsed), len(out.Results), out.Attempts)

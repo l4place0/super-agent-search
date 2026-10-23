@@ -65,6 +65,7 @@ type App struct {
 	flight      map[int64]int
 	turns       map[int64]float64
 	cacheMu     sync.Mutex
+	cacheEpoch  uint64
 	cache       map[string]cacheEntry
 	searchSlots chan struct{}
 	client      *httpClient
@@ -469,7 +470,12 @@ func (a *App) record(operation, query string, ok bool, elapsed, count int, detai
 	_, _ = a.db.Exec(`INSERT INTO requests(created_at,operation,query,ok,elapsed_ms,result_count,details) VALUES(?,?,?,?,?,?,?)`, time.Now().UTC().Format(time.RFC3339), operation, query, ok, elapsed, count, string(b))
 	_, _ = a.db.Exec(`DELETE FROM requests WHERE id < (SELECT COALESCE(MAX(id),0)-2000 FROM requests)`)
 }
-func (a *App) invalidate() { a.cacheMu.Lock(); a.cache = map[string]cacheEntry{}; a.cacheMu.Unlock() }
+func (a *App) invalidate() {
+	a.cacheMu.Lock()
+	a.cacheEpoch++
+	a.cache = map[string]cacheEntry{}
+	a.cacheMu.Unlock()
+}
 func safeError(status int) string {
 	if status == 0 {
 		return "network request failed"
