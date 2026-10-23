@@ -11,6 +11,9 @@ import (
 func (a *App) acquireTestKey(id int64) (Key, Provider, error) {
 	a.poolMu.Lock()
 	defer a.poolMu.Unlock()
+	if a.poolFault.Load() {
+		return Key{}, Provider{}, errStorage
+	}
 	all, e := a.keys("")
 	if e != nil {
 		return Key{}, Provider{}, e
@@ -61,6 +64,7 @@ func (a *App) testKey(ctx context.Context, id int64) (Attempt, error) {
 	status := 200
 	cooldown := int64(0)
 	if e != nil {
+		a.metrics.UpstreamFailures.Add(1)
 		out.Error = e.Error()
 		status = 0
 		var ue upstreamError
@@ -74,7 +78,9 @@ func (a *App) testKey(ctx context.Context, id int64) (Attempt, error) {
 			cooldown = time.Now().Add(10 * time.Second).Unix()
 		}
 	}
-	a.release(k, status, cooldown, out.Error)
+	if err := a.release(k, status, cooldown, out.Error); err != nil {
+		return Attempt{}, err
+	}
 	a.record("key_test", provider.ID, out.OK, int(out.Elapsed), out.Count, out)
 	return out, nil
 }

@@ -298,7 +298,7 @@ func (a *App) providerSearch(ctx context.Context, p Provider, query string, coun
 		if !isKeyless {
 			k, err = a.acquire(p.ID, excluded)
 			if err != nil {
-				attempts = append(attempts, Attempt{Provider: p.ID, Error: errNoKey.Error()})
+				attempts = append(attempts, Attempt{Provider: p.ID, Error: err.Error()})
 				break
 			}
 			excluded[k.ID] = true
@@ -309,6 +309,7 @@ func (a *App) providerSearch(ctx context.Context, p Provider, query string, coun
 		cooldown := int64(0)
 		retry := false
 		if err != nil {
+			a.metrics.UpstreamFailures.Add(1)
 			attempt.Error = err.Error()
 			status = 0
 			var ue upstreamError
@@ -327,7 +328,11 @@ func (a *App) providerSearch(ctx context.Context, p Provider, query string, coun
 			}
 		}
 		if !isKeyless {
-			a.release(k, status, cooldown, attempt.Error)
+			if releaseErr := a.release(k, status, cooldown, attempt.Error); releaseErr != nil {
+				attempt.OK, attempt.Error = false, releaseErr.Error()
+				attempts = append(attempts, attempt)
+				return nil, attempts
+			}
 		}
 		attempts = append(attempts, attempt)
 		if err == nil {
@@ -476,6 +481,9 @@ func fuse(rows map[string][]Hit, in SearchInput) []Hit {
 }
 func (a *App) search(ctx context.Context, in SearchInput) (SearchOutput, error) {
 	start := time.Now()
+	if a.poolFault.Load() {
+		return SearchOutput{}, errStorage
+	}
 	in.Query = strings.TrimSpace(in.Query)
 	if in.Query == "" || len(in.Query) > 2000 {
 		return SearchOutput{}, errors.New("query must contain 1–2000 bytes")
@@ -528,6 +536,10 @@ func (a *App) search(ctx context.Context, in SearchInput) (SearchOutput, error) 
 			out := entry.value
 			out.CacheHit = true
 			out.Elapsed = time.Since(start).Milliseconds()
+			if o, ok := ctx.Value(observationKey{}).(*observation); ok {
+				o.cacheHit = true
+			}
+			a.operationRecord(ctx, "search", in.Query, true, int(out.Elapsed), len(out.Results), out.Attempts)
 			return out, nil
 		}
 	}
@@ -550,6 +562,9 @@ func (a *App) search(ctx context.Context, in SearchInput) (SearchOutput, error) 
 		}(p)
 	}
 	wg.Wait()
+	if a.poolFault.Load() {
+		return SearchOutput{}, errStorage
+	}
 	sort.SliceStable(out.Attempts, func(i, j int) bool { return out.Attempts[i].Provider < out.Attempts[j].Provider })
 	sort.Strings(out.Warnings)
 	out.Results = fuse(rows, in)
@@ -568,7 +583,7 @@ func (a *App) search(ctx context.Context, in SearchInput) (SearchOutput, error) 
 		}
 		a.cacheMu.Unlock()
 	}
-	a.record("search", in.Query, len(out.Results) > 0, int(out.Elapsed), len(out.Results), out.Attempts)
+	a.operationRecord(ctx, "search", in.Query, len(out.Results) > 0, int(out.Elapsed), len(out.Results), out.Attempts)
 	return out, nil
 }
 func (a *App) testProvider(ctx context.Context, id string) ([]Attempt, error) {

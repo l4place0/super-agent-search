@@ -153,6 +153,12 @@ rm internal/app/audit_repro_test.go
 
 三批修复已推送 `origin/main`；[GitHub CI run 39949541164](https://github.com/l4place0/uni-agent-search/actions/runs/39949541164) 全部通过（含 race、vet、sh 与 PowerShell parser 检查）。未部署、未迁移线上数据。
 
+### 第四批：A5 已修复并验证
+
+`/healthz` 保留 liveness，新增 `/readyz` 检查数据库表可读和 Key 状态持久化故障；返回实例 ID。Key release 写失败后 fail closed，需排除故障并重启；审计日志写失败采用脱敏错误日志，不伪造记录。overview/logs 不再忽略读取错误。搜索和 fetch 的 HTTP 入口统一观测，包含鉴权失败、并发拒绝、缓存命中、非 2xx/不支持类型/空正文等失败；保留 2000 条窗口统计，另提供 `traffic_since_start` 内存计数。日志含生成的 request ID、状态和耗时，不含请求头/原始 URL/驱动错误/上游正文；panic 仅记录函数帧位置，不记录 panic 值与参数。
+
+回归：[observe_test.go](../internal/app/observe_test.go)，覆盖数据库故障、Key 写失败停调度、入口计数与缓存/抓取失败、panic 脱敏。WSL 全套 race、vet、build 通过。未部署。
+
 ## 推荐执行顺序
 
 1. 修 A1/A2：统一 Key lease/revision 和单调冷却，补并发回归。

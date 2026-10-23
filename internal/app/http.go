@@ -4,6 +4,7 @@ import (
 	"context"
 	"embed"
 	"encoding/json"
+	"errors"
 	"io"
 	"io/fs"
 	"net/http"
@@ -24,6 +25,9 @@ func respond(w http.ResponseWriter, status int, v any) {
 	_ = json.NewEncoder(w).Encode(v)
 }
 func fail(w http.ResponseWriter, status int, msg string) {
+	if msg == errStorage.Error() {
+		status = 503
+	}
 	respond(w, status, map[string]string{"error": msg})
 }
 func decode(w http.ResponseWriter, r *http.Request, dst any) bool {
@@ -75,7 +79,14 @@ func (a *App) slot(next http.HandlerFunc) http.HandlerFunc {
 func (a *App) Handler() http.Handler {
 	m := http.NewServeMux()
 	m.HandleFunc("GET /healthz", func(w http.ResponseWriter, r *http.Request) {
-		respond(w, 200, map[string]any{"status": "ok", "version": Version})
+		respond(w, 200, map[string]any{"status": "ok", "version": Version, "instance_id": a.instanceID})
+	})
+	m.HandleFunc("GET /readyz", func(w http.ResponseWriter, r *http.Request) {
+		if !a.ready(r.Context()) {
+			fail(w, 503, "database unavailable or key state persistence failed")
+			return
+		}
+		respond(w, 200, map[string]any{"status": "ready", "version": Version, "instance_id": a.instanceID})
 	})
 	m.HandleFunc("GET /v1/capabilities", a.auth(false, func(w http.ResponseWriter, r *http.Request) {
 		providers, e := a.providers()
@@ -94,7 +105,11 @@ func (a *App) Handler() http.Handler {
 		defer cancel()
 		out, e := a.search(ctx, in)
 		if e != nil {
-			fail(w, 400, e.Error())
+			if errors.Is(e, errStorage) {
+				fail(w, 503, errStorage.Error())
+			} else {
+				fail(w, 400, e.Error())
+			}
 			return
 		}
 		status := 200
@@ -202,7 +217,11 @@ func (a *App) Handler() http.Handler {
 			fail(w, 500, "database unavailable")
 			return
 		}
-		n, _ := res.RowsAffected()
+		n, err := res.RowsAffected()
+		if a.storageError("key_delete_affected", err) != nil {
+			fail(w, 503, errStorage.Error())
+			return
+		}
 		if n == 0 {
 			fail(w, 404, "key not found")
 			return
@@ -217,18 +236,13 @@ func (a *App) Handler() http.Handler {
 	}))
 	sub, _ := fs.Sub(web, "web")
 	m.Handle("GET /", http.FileServer(http.FS(sub)))
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return a.observe(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("X-Content-Type-Options", "nosniff")
 		w.Header().Set("X-Frame-Options", "DENY")
 		w.Header().Set("Referrer-Policy", "no-referrer")
 		w.Header().Set("Content-Security-Policy", "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'none'")
-		defer func() {
-			if recover() != nil {
-				fail(w, 500, "internal server error")
-			}
-		}()
 		m.ServeHTTP(w, r)
-	})
+	}))
 }
 func (a *App) updateProvider(w http.ResponseWriter, r *http.Request) {
 	var in struct {
@@ -264,7 +278,11 @@ func (a *App) updateProvider(w http.ResponseWriter, r *http.Request) {
 		fail(w, 500, "database unavailable")
 		return
 	}
-	n, _ := res.RowsAffected()
+	n, err := res.RowsAffected()
+	if a.storageError("provider_update_affected", err) != nil {
+		fail(w, 503, errStorage.Error())
+		return
+	}
 	if n == 0 {
 		fail(w, 404, "provider not found")
 		return
@@ -323,7 +341,11 @@ func (a *App) updateKey(w http.ResponseWriter, r *http.Request) {
 		fail(w, 500, "database unavailable")
 		return
 	}
-	n, _ := res.RowsAffected()
+	n, err := res.RowsAffected()
+	if a.storageError("key_update_affected", err) != nil {
+		fail(w, 503, errStorage.Error())
+		return
+	}
 	if n == 0 {
 		fail(w, 404, "key not found")
 		return
@@ -333,13 +355,21 @@ func (a *App) updateKey(w http.ResponseWriter, r *http.Request) {
 }
 func (a *App) overview(w http.ResponseWriter, r *http.Request) {
 	var total, success, avg int
-	_ = a.db.QueryRow(`SELECT COUNT(*),COALESCE(SUM(ok),0),CAST(COALESCE(AVG(elapsed_ms),0) AS INTEGER) FROM requests`).Scan(&total, &success, &avg)
+	err := a.db.QueryRowContext(r.Context(), `SELECT COUNT(*),COALESCE(SUM(ok),0),CAST(COALESCE(AVG(elapsed_ms),0) AS INTEGER) FROM requests`).Scan(&total, &success, &avg)
+	if a.storageError("overview_requests", err) != nil {
+		fail(w, 503, errStorage.Error())
+		return
+	}
 	var keys int
-	_ = a.db.QueryRow(`SELECT COUNT(*) FROM api_keys WHERE enabled=1`).Scan(&keys)
+	err = a.db.QueryRowContext(r.Context(), `SELECT COUNT(*) FROM api_keys WHERE enabled=1`).Scan(&keys)
+	if a.storageError("overview_keys", err) != nil {
+		fail(w, 503, errStorage.Error())
+		return
+	}
 	a.cacheMu.Lock()
 	cache := len(a.cache)
 	a.cacheMu.Unlock()
-	respond(w, 200, map[string]any{"version": Version, "requests": total, "successes": success, "average_ms": avg, "active_keys": keys, "cached_searches": cache, "log_limit": 2000})
+	respond(w, 200, map[string]any{"version": Version, "requests": total, "successes": success, "average_ms": avg, "active_keys": keys, "cached_searches": cache, "log_limit": 2000, "traffic_since_start": map[string]int64{"requests": a.metrics.Requests.Load(), "successes": a.metrics.Successes.Load(), "cache_hits": a.metrics.CacheHits.Load(), "rejected_429": a.metrics.Rejected.Load(), "upstream_failures": a.metrics.UpstreamFailures.Load()}})
 }
 func (a *App) logs(w http.ResponseWriter, r *http.Request) {
 	rows, e := a.db.Query(`SELECT id,created_at,operation,query,ok,elapsed_ms,result_count,details FROM requests ORDER BY id DESC LIMIT 60`)
@@ -353,12 +383,17 @@ func (a *App) logs(w http.ResponseWriter, r *http.Request) {
 		var id, elapsed, count int
 		var created, op, q, details string
 		var ok bool
-		if rows.Scan(&id, &created, &op, &q, &ok, &elapsed, &count, &details) != nil {
-			continue
+		if err := rows.Scan(&id, &created, &op, &q, &ok, &elapsed, &count, &details); a.storageError("logs_scan", err) != nil {
+			fail(w, 503, errStorage.Error())
+			return
 		}
 		var data any
 		_ = json.Unmarshal([]byte(details), &data)
 		out = append(out, map[string]any{"id": id, "created_at": created, "operation": op, "query": q, "ok": ok, "elapsed_ms": elapsed, "result_count": count, "details": data})
+	}
+	if a.storageError("logs_rows", rows.Err()) != nil {
+		fail(w, 503, errStorage.Error())
+		return
 	}
 	respond(w, 200, out)
 }
@@ -380,6 +415,9 @@ func (a *App) fetchHandler(w http.ResponseWriter, r *http.Request) {
 		fail(w, 400, "invalid URL, focus or offset")
 		return
 	}
+	if o, ok := r.Context().Value(observationKey{}).(*observation); ok {
+		o.query = in.URL
+	}
 	if in.Limit == 0 {
 		in.Limit = 16000
 	}
@@ -397,12 +435,13 @@ func (a *App) fetchHandler(w http.ResponseWriter, r *http.Request) {
 	req.Header.Set("User-Agent", "UniAgentSearch/"+Version)
 	res, e := a.client.public.Do(req)
 	if e != nil {
-		a.record("fetch", in.URL, false, int(time.Since(start).Milliseconds()), 0, map[string]string{"error": "public page fetch failed"})
+		a.metrics.UpstreamFailures.Add(1)
 		fail(w, 502, "public page fetch failed; private/reserved networks are blocked")
 		return
 	}
 	defer res.Body.Close()
 	if res.StatusCode < 200 || res.StatusCode >= 300 {
+		a.metrics.UpstreamFailures.Add(1)
 		fail(w, 502, safeError(res.StatusCode))
 		return
 	}
@@ -450,7 +489,7 @@ func (a *App) fetchHandler(w http.ResponseWriter, r *http.Request) {
 	if end < len(chars) {
 		out["next_offset"] = end
 	}
-	a.record("fetch", in.URL, true, int(time.Since(start).Milliseconds()), 1, map[string]any{"characters": len(chars)})
+	a.operationRecord(r.Context(), "fetch", in.URL, true, int(time.Since(start).Milliseconds()), 1, map[string]any{"characters": len(chars)})
 	respond(w, 200, out)
 }
 func readHTML(raw string) (string, string) {

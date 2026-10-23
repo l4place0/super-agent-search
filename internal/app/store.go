@@ -11,10 +11,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	_ "modernc.org/sqlite"
@@ -69,6 +71,10 @@ type App struct {
 	cache       map[string]cacheEntry
 	searchSlots chan struct{}
 	client      *httpClient
+	logger      *slog.Logger
+	metrics     requestMetrics
+	poolFault   atomic.Bool
+	instanceID  string
 }
 
 func token() string {
@@ -152,7 +158,7 @@ func New(dir string) (*App, error) {
 		return nil, err
 	}
 	db.SetMaxOpenConns(1)
-	a := &App{DataDir: dir, db: db, aead: aead, adminToken: creds.Admin, clientToken: creds.Client, flight: map[int64]int{}, turns: map[int64]float64{}, cache: map[string]cacheEntry{}, searchSlots: make(chan struct{}, 16), client: newHTTPClient()}
+	a := &App{DataDir: dir, db: db, aead: aead, adminToken: creds.Admin, clientToken: creds.Client, flight: map[int64]int{}, turns: map[int64]float64{}, cache: map[string]cacheEntry{}, searchSlots: make(chan struct{}, 16), client: newHTTPClient(), logger: slog.Default(), instanceID: token()}
 	_, err = db.Exec(`PRAGMA journal_mode=WAL; PRAGMA busy_timeout=5000;
 CREATE TABLE IF NOT EXISTS providers(id TEXT PRIMARY KEY,name TEXT NOT NULL,kind TEXT NOT NULL,base_url TEXT NOT NULL,enabled INTEGER NOT NULL,timeout_seconds INTEGER NOT NULL);
 CREATE TABLE IF NOT EXISTS api_keys(id INTEGER PRIMARY KEY AUTOINCREMENT,provider_id TEXT NOT NULL,label TEXT NOT NULL,secret TEXT NOT NULL,masked TEXT NOT NULL,enabled INTEGER NOT NULL DEFAULT 1,weight INTEGER NOT NULL DEFAULT 1,max_concurrent INTEGER NOT NULL DEFAULT 2,cooldown_until INTEGER NOT NULL DEFAULT 0,last_error TEXT NOT NULL DEFAULT '',uses INTEGER NOT NULL DEFAULT 0,successes INTEGER NOT NULL DEFAULT 0);
@@ -264,18 +270,18 @@ func (a *App) decrypt(s string) (string, error) {
 func (a *App) providers() ([]Provider, error) {
 	rows, err := a.db.Query(`SELECT id,name,kind,base_url,enabled,timeout_seconds,model,search_mode FROM providers ORDER BY CASE WHEN kind='xai' THEN 0 WHEN kind='grok-compatible' THEN 1 ELSE 2 END,id`)
 	if err != nil {
-		return nil, err
+		return nil, a.storageError("providers_query", err)
 	}
 	defer rows.Close()
 	out := []Provider{}
 	for rows.Next() {
 		var p Provider
 		if err = rows.Scan(&p.ID, &p.Name, &p.Kind, &p.BaseURL, &p.Enabled, &p.Timeout, &p.Model, &p.SearchMode); err != nil {
-			return nil, err
+			return nil, a.storageError("providers_scan", err)
 		}
 		out = append(out, p)
 	}
-	return out, rows.Err()
+	return out, a.storageError("providers", rows.Err())
 }
 func (a *App) keys(provider string) ([]Key, error) {
 	q := `SELECT id,provider_id,label,secret,masked,enabled,weight,max_concurrent,cooldown_until,last_error,uses,successes,revision FROM api_keys`
@@ -287,18 +293,18 @@ func (a *App) keys(provider string) ([]Key, error) {
 	q += " ORDER BY id"
 	rows, err := a.db.Query(q, args...)
 	if err != nil {
-		return nil, err
+		return nil, a.storageError("keys_query", err)
 	}
 	defer rows.Close()
 	out := []Key{}
 	for rows.Next() {
 		var k Key
 		if err = rows.Scan(&k.ID, &k.ProviderID, &k.Label, &k.secret, &k.Masked, &k.Enabled, &k.Weight, &k.MaxConcurrent, &k.CooldownUntil, &k.LastError, &k.Uses, &k.Successes, &k.revision); err != nil {
-			return nil, err
+			return nil, a.storageError("keys_scan", err)
 		}
 		out = append(out, k)
 	}
-	return out, rows.Err()
+	return out, a.storageError("keys", rows.Err())
 }
 func (a *App) addKey(provider, label, secret string, weight, concurrency int) (int64, error) {
 	ids, err := a.addKeys(provider, []KeyInput{{Label: label, Secret: secret, Weight: weight, MaxConcurrent: concurrency}})
@@ -328,26 +334,29 @@ func (a *App) addKeys(provider string, input []KeyInput) ([]int64, error) {
 	}
 	tx, err := a.db.Begin()
 	if err != nil {
-		return nil, err
+		return nil, a.storageError("keys_begin", err)
 	}
 	defer tx.Rollback()
 	var kind string
-	if tx.QueryRow(`SELECT kind FROM providers WHERE id=?`, provider).Scan(&kind) != nil {
-		return nil, errors.New("provider not found")
+	if err := tx.QueryRow(`SELECT kind FROM providers WHERE id=?`, provider).Scan(&kind); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, errors.New("provider not found")
+		}
+		return nil, a.storageError("keys_provider", err)
 	}
 	if keyless(kind) {
 		return nil, errors.New("this provider does not use keys")
 	}
 	existing, err := tx.Query(`SELECT secret FROM api_keys WHERE provider_id=?`, provider)
 	if err != nil {
-		return nil, err
+		return nil, a.storageError("keys_existing", err)
 	}
 	seen := map[string]bool{}
 	for existing.Next() {
 		var encrypted string
 		if err = existing.Scan(&encrypted); err != nil {
 			existing.Close()
-			return nil, err
+			return nil, a.storageError("keys_existing_scan", err)
 		}
 		plain, e := a.decrypt(encrypted)
 		if e != nil {
@@ -359,7 +368,7 @@ func (a *App) addKeys(provider string, input []KeyInput) ([]int64, error) {
 	err = existing.Err()
 	existing.Close()
 	if err != nil {
-		return nil, err
+		return nil, a.storageError("keys_existing_rows", err)
 	}
 	ids := []int64{}
 	for i, k := range input {
@@ -392,16 +401,16 @@ func (a *App) addKeys(provider string, input []KeyInput) ([]int64, error) {
 		}
 		res, e := tx.Exec(`INSERT INTO api_keys(provider_id,label,secret,masked,weight,max_concurrent) VALUES(?,?,?,?,?,?)`, provider, k.Label, encrypted, maskKey(k.Secret), k.Weight, k.MaxConcurrent)
 		if e != nil {
-			return nil, e
+			return nil, a.storageError("keys_insert", e)
 		}
 		id, e := res.LastInsertId()
 		if e != nil {
-			return nil, e
+			return nil, a.storageError("keys_insert_id", e)
 		}
 		ids = append(ids, id)
 	}
 	if err = tx.Commit(); err != nil {
-		return nil, err
+		return nil, a.storageError("keys_commit", err)
 	}
 	return ids, nil
 }
@@ -411,6 +420,9 @@ var errNoKey = errors.New("no available key (missing, disabled, cooling down or 
 func (a *App) acquire(provider string, exclude map[int64]bool) (Key, error) {
 	a.poolMu.Lock()
 	defer a.poolMu.Unlock()
+	if a.poolFault.Load() {
+		return Key{}, errStorage
+	}
 	keys, err := a.keys(provider)
 	if err != nil {
 		return Key{}, err
@@ -443,38 +455,48 @@ func (a *App) reserveKey(k Key) (Key, error) {
 		return Key{}, err
 	}
 	a.flight[k.ID]++
-	_, err = a.db.Exec(`UPDATE api_keys SET uses=uses+1 WHERE id=?`, k.ID)
+	_, err = a.db.Exec(`UPDATE api_keys SET uses=uses+1 WHERE id=? AND revision=?`, k.ID, k.revision)
 	if err != nil {
 		a.flight[k.ID]--
-		return Key{}, err
+		return Key{}, a.storageError("key_acquire", err)
 	}
 	k.lease = &keyLease{}
 	return k, nil
 }
-func (a *App) release(k Key, status int, cooldown int64, reason string) {
+func (a *App) release(k Key, status int, cooldown int64, reason string) error {
 	a.poolMu.Lock()
 	defer a.poolMu.Unlock()
 	if k.lease == nil || k.lease.released {
-		return
+		return nil
 	}
 	k.lease.released = true
 	a.flight[k.ID]--
 	if a.flight[k.ID] == 0 {
 		delete(a.flight, k.ID)
 	}
+	var err error
 	if status >= 200 && status < 300 {
 		// Keep diagnostics while cooling down or disabled by another request.
-		_, _ = a.db.Exec(`UPDATE api_keys SET successes=successes+1,last_error=CASE WHEN cooldown_until<=? AND enabled=1 THEN '' ELSE last_error END WHERE id=? AND revision=?`, time.Now().Unix(), k.ID, k.revision)
+		_, err = a.db.Exec(`UPDATE api_keys SET successes=successes+1,last_error=CASE WHEN cooldown_until<=? AND enabled=1 THEN '' ELSE last_error END WHERE id=? AND revision=?`, time.Now().Unix(), k.ID, k.revision)
 	} else {
 		enabled := status != 401 && status != 403
 		// A shorter failure must not overwrite the longer cooldown's diagnosis.
-		_, _ = a.db.Exec(`UPDATE api_keys SET enabled=CASE WHEN ? THEN enabled ELSE 0 END,last_error=CASE WHEN ? OR (enabled=1 AND ?>=cooldown_until) THEN ? ELSE last_error END,cooldown_until=MAX(cooldown_until,?) WHERE id=? AND revision=?`, enabled, !enabled, cooldown, reason, cooldown, k.ID, k.revision)
+		_, err = a.db.Exec(`UPDATE api_keys SET enabled=CASE WHEN ? THEN enabled ELSE 0 END,last_error=CASE WHEN ? OR (enabled=1 AND ?>=cooldown_until) THEN ? ELSE last_error END,cooldown_until=MAX(cooldown_until,?) WHERE id=? AND revision=?`, enabled, !enabled, cooldown, reason, cooldown, k.ID, k.revision)
 	}
+	if err != nil {
+		// Unknown persisted state: fail closed until restart.
+		a.poolFault.Store(true)
+	}
+	return a.storageError("key_release", err)
 }
 func (a *App) record(operation, query string, ok bool, elapsed, count int, details any) {
 	b, _ := json.Marshal(details)
-	_, _ = a.db.Exec(`INSERT INTO requests(created_at,operation,query,ok,elapsed_ms,result_count,details) VALUES(?,?,?,?,?,?,?)`, time.Now().UTC().Format(time.RFC3339), operation, query, ok, elapsed, count, string(b))
-	_, _ = a.db.Exec(`DELETE FROM requests WHERE id < (SELECT COALESCE(MAX(id),0)-2000 FROM requests)`)
+	_, err := a.db.Exec(`INSERT INTO requests(created_at,operation,query,ok,elapsed_ms,result_count,details) VALUES(?,?,?,?,?,?,?)`, time.Now().UTC().Format(time.RFC3339), operation, query, ok, elapsed, count, string(b))
+	if a.storageError("record_insert", err) != nil {
+		return
+	}
+	_, err = a.db.Exec(`DELETE FROM requests WHERE id < (SELECT COALESCE(MAX(id),0)-2000 FROM requests)`)
+	a.storageError("record_prune", err)
 }
 func (a *App) invalidate() {
 	a.cacheMu.Lock()
